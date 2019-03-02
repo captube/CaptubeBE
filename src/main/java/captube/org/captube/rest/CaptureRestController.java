@@ -31,6 +31,8 @@ public class CaptureRestController {
         try {
             String url = request.getURL();
             String responseEncodingType = request.getResponseEncodingType();
+            String language = request.getLanguage();
+            Boolean isNoSub = request.isNoSub();
             int numToCapture = request.getNumberToCapture();
             long startTime = request.getStartTimeStamp();
             long endTime = request.getEndTimeStamp();
