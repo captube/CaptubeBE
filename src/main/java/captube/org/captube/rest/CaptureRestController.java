@@ -5,8 +5,11 @@ import captube.org.captube.domain.CaptureRequest;
 import captube.org.captube.domain.CaptureResponse;
 import captube.org.captube.service.PytubeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,9 +30,9 @@ public class CaptureRestController {
     private PytubeService pytubeService;
 
     @RequestMapping("/getImages")
-    public ResponseEntity<CaptureResponse[]> getImages(CaptureRequest request) {
+    public ResponseEntity<CaptureResponse[]> getImages(@RequestBody  CaptureRequest request) {
         try {
-            String url = request.getURL();
+            String url = request.getUrl();
             String responseEncodingType = request.getResponseEncodingType();
             String language = request.getLanguage();
             Boolean isNoSub = request.isNoSub();
