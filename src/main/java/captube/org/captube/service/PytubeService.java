@@ -17,7 +17,7 @@ public class PytubeService {
     @Autowired
     private ResourceLoader resourceLoader;
 
-    private static final String DEFAULT_LANGUAGE = "kor";
+    private static final String DEFAULT_LANGUAGE = "en";
     private static final String PYTUBE_SCRIPT_PATH =  System.getProperty("user.dir") +"/pytube/get_youtube.py";
     private static final String PYTUBE_RESOURCE_PATH = "pytube";
     private static final String PYTUBE_COPY_PATH = System.getProperty("user.dir") + "/pytube";
@@ -50,13 +50,13 @@ public class PytubeService {
 
     public CaptubeImage[] getImages(String url) {
         CaptubeImage[] images = null;
-        //Embed pytubeScript
+        getImages(url, DEFAULT_LANGUAGE, false);
         return images;
     }
 
     public CaptubeImage[] getImages(String url, String language, boolean isNosub) {
         CaptubeImage[] images = null;
-        //Embed pytubeScript
+        Process captubeProcess = Runtime.getRuntime().exec()
         return images;
     }
 }
