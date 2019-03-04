@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.io.*;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -57,6 +59,8 @@ public class PytubeService {
             File resultDir = new File(CAPTURE_RESULT_PATH);
             File[] imgFiles = resultDir.listFiles();
 
+            sortByNumber(imgFiles);
+
             for (File imgFile : imgFiles) {
                 logger.info(imgFile.getName());
             }
@@ -72,5 +76,30 @@ public class PytubeService {
             throw new Exception("Failed to capture youtube");
         }
         return images;
+    }
+
+    private void sortByNumber(File[] files) {
+        Arrays.sort(files, new Comparator<File>() {
+            @Override
+            public int compare(File o1, File o2) {
+                int n1 = extractNumber(o1.getName());
+                int n2 = extractNumber(o2.getName());
+                return n1 - n2;
+            }
+
+            private int extractNumber(String name) {
+                int i = 0;
+                try {
+                    int s = name.indexOf('_') + 6;
+                    int e = name.indexOf('.');
+                    String number = name.substring(s, e);
+                    i = Integer.parseInt(number);
+                } catch (Exception e) {
+                    i = 0; // if filename does not match the format
+                    // then default to 0
+                }
+                return i;
+            }
+        });
     }
 }
