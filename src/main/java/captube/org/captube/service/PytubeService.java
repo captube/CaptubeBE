@@ -32,9 +32,7 @@ public class PytubeService {
 
 
     public CaptubeImage[] getImages(String url) throws Exception, IOException, InterruptedException {
-        CaptubeImage[] images = null;
-        getImages(url, DEFAULT_LANGUAGE, false);
-        return images;
+        return getImages(url, DEFAULT_LANGUAGE, false);
     }
 
     public CaptubeImage[] getImages
@@ -42,11 +40,13 @@ public class PytubeService {
 
         CaptubeImage[] images = null;
 
+        logger.info("Start to run captube python script");
         Process captubeProcess = Runtime.getRuntime().exec(
                 isNosub ?
                         new String[]{"python", PYTUBE_SCRIPT_PATH, "-u", url, "-l", language} :
                         new String[]{"python", PYTUBE_SCRIPT_PATH, "-u", url, "-l", language, "--no-sub"});
         captubeProcess.waitFor(CAPTURE_TIMOUT, TimeUnit.MILLISECONDS);
+        logger.info("Running captube python script finished");
         if (captubeProcess.exitValue() == 0) {
             final BufferedReader reader = new BufferedReader(
                     new InputStreamReader(captubeProcess.getInputStream()));
@@ -57,12 +57,17 @@ public class PytubeService {
             reader.close();
 
             File resultDir = new File(CAPTURE_RESULT_PATH);
-            File[] imgFiles = resultDir.listFiles();
 
+            File[] imgFiles = resultDir.listFiles();
             sortByNumber(imgFiles);
 
+            images = new CaptubeImage[imgFiles.length];
+            int count = 0;
+
             for (File imgFile : imgFiles) {
-                logger.info(imgFile.getName());
+                CaptubeImage captubeImage = new CaptubeImage();
+                captubeImage.setImagePath(imgFile.getAbsolutePath());
+                images[count++] = captubeImage;
             }
 
         } else {

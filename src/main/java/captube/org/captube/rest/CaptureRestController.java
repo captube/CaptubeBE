@@ -4,6 +4,9 @@ import captube.org.captube.custom.CaptubeImage;
 import captube.org.captube.domain.CaptureRequest;
 import captube.org.captube.domain.CaptureResponse;
 import captube.org.captube.service.PytubeService;
+import org.apache.juli.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
@@ -26,11 +29,13 @@ import static captube.org.captube.common.Constants.EncodingType.BASE64;
 @RequestMapping("/api/v1/capture")
 public class CaptureRestController {
 
+    private Logger logger = LoggerFactory.getLogger(CaptureRestController.class);
+
     @Autowired
     private PytubeService pytubeService;
 
     @RequestMapping("/getImages")
-    public ResponseEntity<CaptureResponse[]> getImages(@RequestBody  CaptureRequest request) {
+    public ResponseEntity<CaptureResponse[]> getImages(@RequestBody CaptureRequest request) {
         try {
             String url = request.getUrl();
             String responseEncodingType = request.getResponseEncodingType();
@@ -41,9 +46,11 @@ public class CaptureRestController {
             long endTime = request.getEndTimeStamp();
 
             ArrayList<CaptureResponse> captureResponses = new ArrayList<>();
-            CaptubeImage[] images = pytubeService.getImages(url);
+            logger.info("Start to get capture images from service");
+            CaptubeImage[] images = pytubeService.getImages(url, language, isNoSub);
 
             for (CaptubeImage image : images) {
+                logger.info("Generating response for image {}", image.getImagePath());
                 CaptureResponse reponseItem = new CaptureResponse();
                 File captureFile = new File(image.getImagePath());
 
@@ -59,10 +66,10 @@ public class CaptureRestController {
                 byte[] fileArray = byteArrayOutputStream.toByteArray();
                 String fileString = null;
 
-                if(responseEncodingType.equals(BASE64)){
+                logger.info("Encoding image data in {} for image {}", responseEncodingType, image.getImagePath());
+                if (responseEncodingType.equals(BASE64)) {
                     fileString = new String(Base64.getEncoder().encode(fileArray));
-                }
-                else{
+                } else {
                     fileString = new String(fileArray);
                 }
 
@@ -75,8 +82,9 @@ public class CaptureRestController {
                 captureResponses.add(reponseItem);
             }
             ResponseEntity<CaptureResponse[]> response = new ResponseEntity<CaptureResponse[]>
-                    (captureResponses.toArray(new CaptureResponse[captureResponses.size()]),HttpStatus.OK);
+                    (captureResponses.toArray(new CaptureResponse[captureResponses.size()]), HttpStatus.OK);
 
+            logger.info("Response for image capture");
             return response;
 
         } catch (Exception e) {
