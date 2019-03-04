@@ -1,7 +1,9 @@
 package captube.org.captube.domain;
 
+import static sun.plugin.javascript.navig.JSType.URL;
+
 public class CaptureRequest {
-    private String URL;
+    private String url;
     private String language;
     private String responseEncodingType;
     private boolean isNoSub;
@@ -9,12 +11,12 @@ public class CaptureRequest {
     private long startTimeStamp;
     private long endTimeStamp;
 
-    public String getURL() {
-        return URL;
+    public String getUrl() {
+        return url;
     }
 
-    public void setURL(String URL) {
-        this.URL = URL;
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     public String getResponseEncodingType() {
