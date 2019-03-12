@@ -1,7 +1,9 @@
 package captube.org.captube.custom;
 
 public class CaptubeImage {
+
     private String imagePath;
+    private String script;
     private long startTime;
     private long endTime;
 
@@ -27,5 +29,13 @@ public class CaptubeImage {
 
     public void setEndTime(long endTime) {
         this.endTime = endTime;
+    }
+
+    public String getScript() {
+        return script;
+    }
+
+    public void setScript(String script) {
+        this.script = script;
     }
 }

@@ -1,7 +1,14 @@
 package captube.org.captube.service;
 
 import captube.org.captube.custom.CaptubeImage;
+import captube.org.captube.custom.CaptubeInfo;
+import captube.org.captube.domain.CaptureItem;
 import ch.qos.logback.core.util.FileUtil;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +18,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.io.*;
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -23,30 +29,33 @@ public class PytubeService {
     private ResourceLoader resourceLoader;
 
     private static final String DEFAULT_LANGUAGE = "en";
-    private static final String PYTUBE_SCRIPT_PATH = System.getProperty("user.dir") + File.separator + "pytube"
-            + File.separator + "get_youtube.py";
-    private static final String CAPTURE_RESULT_PATH = System.getProperty("user.dir") + File.separator + "pytube"
-            + File.separator + "imgs";
+    private static final String WORK_ROOT = System.getProperty("user.dir") + File.separator + "pytube";
+    private static final String PYTUBE_SCRIPT_PATH = WORK_ROOT + File.separator + "get_youtube.py";
+    private static final String CAPTURE_RESULT_PATH = WORK_ROOT + File.separator + "imgs";
     private static final String PREFIX_IMG = "downloaded_video";
     private static final int CAPTURE_TIMOUT = 15 * 60 * 1000;
 
 
-    public CaptubeImage[] getImages(String url) throws Exception, IOException, InterruptedException {
-        return getImages(url, DEFAULT_LANGUAGE, false);
+    public CaptubeInfo getImages(String url, String fileName) throws Exception, IOException, InterruptedException {
+        return getImages(url, DEFAULT_LANGUAGE, false, fileName);
     }
 
-    public CaptubeImage[] getImages
-            (String url, String language, boolean isNosub) throws Exception, IOException, InterruptedException {
+    public CaptubeInfo getImages
+            (String url, String language, boolean isNosub, String fileName) throws Exception, IOException, InterruptedException {
 
-        CaptubeImage[] images = null;
+        CaptubeInfo captubeInfo = new CaptubeInfo();
+        ArrayList<CaptubeImage> images = new ArrayList<>();
+        String title = "";
 
         logger.info("Start to run captube python script");
+
         Process captubeProcess = Runtime.getRuntime().exec(
                 isNosub ?
-                        new String[]{"python", PYTUBE_SCRIPT_PATH, "-u", url, "-l", language} :
-                        new String[]{"python", PYTUBE_SCRIPT_PATH, "-u", url, "-l", language, "--no-sub"});
+                        new String[]{"python", PYTUBE_SCRIPT_PATH, "-u", url, "-l", language, "-n", fileName} :
+                        new String[]{"python", PYTUBE_SCRIPT_PATH, "-u", url, "-l", language, "-n", fileName, "--no-sub"});
         captubeProcess.waitFor(CAPTURE_TIMOUT, TimeUnit.MILLISECONDS);
         logger.info("Running captube python script finished");
+
         if (captubeProcess.exitValue() == 0) {
             final BufferedReader reader = new BufferedReader(
                     new InputStreamReader(captubeProcess.getInputStream()));
@@ -56,20 +65,24 @@ public class PytubeService {
             }
             reader.close();
 
-            File resultDir = new File(CAPTURE_RESULT_PATH);
+            String captubeJsonPath = WORK_ROOT + File.separator + fileName + ".json";
+            File jsonFile = new File(captubeJsonPath);
+            ObjectMapper mapper = new ObjectMapper();
 
-            File[] imgFiles = resultDir.listFiles();
-            sortByNumber(imgFiles);
+            JsonNode resultJson = mapper.readTree(jsonFile);
+            Iterator<JsonNode> frameInfos = resultJson.get("frame_infos").iterator();
 
-            images = new CaptubeImage[imgFiles.length];
-            int count = 0;
-
-            for (File imgFile : imgFiles) {
+            while(frameInfos.hasNext()){
+                JsonNode frame = frameInfos.next();
                 CaptubeImage captubeImage = new CaptubeImage();
-                captubeImage.setImagePath(imgFile.getAbsolutePath());
-                images[count++] = captubeImage;
+                captubeImage.setImagePath(frame.get("img_path").asText());
+                captubeImage.setStartTime(frame.get("time_info").asInt());
+                captubeImage.setEndTime(frame.get("time_info").asInt());
+                captubeImage.setScript(frame.get("script").asText());
+                images.add(captubeImage);
             }
 
+            title = resultJson.get("title").asText();
         } else {
             final BufferedReader reader = new BufferedReader(
                     new InputStreamReader(captubeProcess.getErrorStream()));
@@ -80,31 +93,9 @@ public class PytubeService {
             reader.close();
             throw new Exception("Failed to capture youtube");
         }
-        return images;
-    }
+        captubeInfo.setCaptubeImages(images.toArray(new CaptubeImage[images.size()]));
+        captubeInfo.setTitle(title);
 
-    private void sortByNumber(File[] files) {
-        Arrays.sort(files, new Comparator<File>() {
-            @Override
-            public int compare(File o1, File o2) {
-                int n1 = extractNumber(o1.getName());
-                int n2 = extractNumber(o2.getName());
-                return n1 - n2;
-            }
-
-            private int extractNumber(String name) {
-                int i = 0;
-                try {
-                    int s = name.indexOf('_') + 6;
-                    int e = name.indexOf('.');
-                    String number = name.substring(s, e);
-                    i = Integer.parseInt(number);
-                } catch (Exception e) {
-                    i = 0; // if filename does not match the format
-                    // then default to 0
-                }
-                return i;
-            }
-        });
+        return captubeInfo;
     }
 }

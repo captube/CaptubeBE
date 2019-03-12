@@ -1,22 +1,21 @@
 package captube.org.captube.rest;
 
 import captube.org.captube.custom.CaptubeImage;
+import captube.org.captube.custom.CaptubeInfo;
 import captube.org.captube.domain.CaptureRequest;
+import captube.org.captube.domain.CaptureItem;
 import captube.org.captube.domain.CaptureResponse;
 import captube.org.captube.service.PytubeService;
-import org.apache.juli.logging.LogFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.xml.ws.Response;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,7 +34,7 @@ public class CaptureRestController {
     private PytubeService pytubeService;
 
     @RequestMapping("/getImages")
-    public ResponseEntity<CaptureResponse[]> getImages(@RequestBody CaptureRequest request) {
+    public ResponseEntity<CaptureResponse> getImages(@RequestHeader(value="Origin") String origin, @RequestBody CaptureRequest request) {
         try {
             String url = request.getUrl();
             String responseEncodingType = request.getResponseEncodingType();
@@ -45,13 +44,14 @@ public class CaptureRestController {
             long startTime = request.getStartTimeStamp();
             long endTime = request.getEndTimeStamp();
 
-            ArrayList<CaptureResponse> captureResponses = new ArrayList<>();
+            ArrayList<CaptureItem> captureItems = new ArrayList<>();
             logger.info("Start to get capture images from service");
-            CaptubeImage[] images = pytubeService.getImages(url, language, isNoSub);
+            CaptubeInfo info = pytubeService.getImages(url, language, isNoSub,"test");
+            CaptubeImage[] images = info.getCaptubeImages();
 
             for (CaptubeImage image : images) {
                 logger.info("Generating response for image {}", image.getImagePath());
-                CaptureResponse reponseItem = new CaptureResponse();
+                CaptureItem reponseItem = new CaptureItem();
                 File captureFile = new File(image.getImagePath());
 
                 FileInputStream inputStream = new FileInputStream(captureFile);
@@ -74,15 +74,22 @@ public class CaptureRestController {
                 }
 
                 reponseItem.setData(fileString);
+                reponseItem.setScript(image.getScript());
                 reponseItem.setFileName(captureFile.getName());
                 reponseItem.setEncodingType(request.getResponseEncodingType());
                 reponseItem.setStartTime(image.getStartTime());
                 reponseItem.setEndTime(image.getEndTime());
 
-                captureResponses.add(reponseItem);
+                captureItems.add(reponseItem);
             }
-            ResponseEntity<CaptureResponse[]> response = new ResponseEntity<CaptureResponse[]>
-                    (captureResponses.toArray(new CaptureResponse[captureResponses.size()]), HttpStatus.OK);
+
+
+            CaptureResponse captureResponse = new CaptureResponse();
+            captureResponse.setTitle(info.getTitle());
+            captureResponse.setCaptureItems(captureItems.toArray(new CaptureItem[captureItems.size()]));
+
+            ResponseEntity<CaptureResponse> response = new ResponseEntity<CaptureResponse>
+                    (captureResponse, HttpStatus.OK);
 
             logger.info("Response for image capture");
             return response;
