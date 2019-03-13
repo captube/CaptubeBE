@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.UUID;
 
 import static captube.org.captube.common.Constants.EncodingType.BASE64;
 
@@ -34,7 +35,7 @@ public class CaptureRestController {
     private PytubeService pytubeService;
 
     @RequestMapping("/getImages")
-    public ResponseEntity<CaptureResponse> getImages(@RequestHeader(value="Origin") String origin, @RequestBody CaptureRequest request) {
+    public ResponseEntity<CaptureResponse> getImages(@RequestHeader(value = "Origin") String origin, @RequestBody CaptureRequest request) {
         try {
             String url = request.getUrl();
             String responseEncodingType = request.getResponseEncodingType();
@@ -46,7 +47,10 @@ public class CaptureRestController {
 
             ArrayList<CaptureItem> captureItems = new ArrayList<>();
             logger.info("Start to get capture images from service");
-            CaptubeInfo info = pytubeService.getImages(url, language, isNoSub,"test");
+            logger.info("Generating unique id for request");
+            String id = UUID.randomUUID().toString().replace("-", "");
+            logger.info("Generate unique id : {}", id);
+            CaptubeInfo info = pytubeService.getImages(url, language, isNoSub, id);
             CaptubeImage[] images = info.getCaptubeImages();
 
             for (CaptubeImage image : images) {

@@ -31,7 +31,6 @@ public class PytubeService {
     private static final String DEFAULT_LANGUAGE = "en";
     private static final String WORK_ROOT = System.getProperty("user.dir") + File.separator + "pytube";
     private static final String PYTUBE_SCRIPT_PATH = WORK_ROOT + File.separator + "get_youtube.py";
-    private static final String CAPTURE_RESULT_PATH = WORK_ROOT + File.separator + "imgs";
     private static final String PREFIX_IMG = "downloaded_video";
     private static final int CAPTURE_TIMOUT = 15 * 60 * 1000;
 
@@ -51,8 +50,10 @@ public class PytubeService {
 
         Process captubeProcess = Runtime.getRuntime().exec(
                 isNosub ?
-                        new String[]{"python", PYTUBE_SCRIPT_PATH, "-u", url, "-l", language, "-n", fileName} :
-                        new String[]{"python", PYTUBE_SCRIPT_PATH, "-u", url, "-l", language, "-n", fileName, "--no-sub"});
+                        new String[]{"python3", PYTUBE_SCRIPT_PATH, "-u", "\"" + url + "\"", "-l", language,
+                                "-n", fileName, "-b", "0.6"} :
+                        new String[]{"python3", PYTUBE_SCRIPT_PATH, "-u", "\"" + url + "\"", "-l", language,
+                                "-n", fileName, "-b", "0.6", "--no-sub"});
         captubeProcess.waitFor(CAPTURE_TIMOUT, TimeUnit.MILLISECONDS);
         logger.info("Running captube python script finished");
 
@@ -65,14 +66,14 @@ public class PytubeService {
             }
             reader.close();
 
-            String captubeJsonPath = WORK_ROOT + File.separator + fileName + ".json";
+            String captubeJsonPath = WORK_ROOT + File.separator + "results" + File.separator + fileName + File.separator + fileName + ".json";
             File jsonFile = new File(captubeJsonPath);
             ObjectMapper mapper = new ObjectMapper();
 
             JsonNode resultJson = mapper.readTree(jsonFile);
             Iterator<JsonNode> frameInfos = resultJson.get("frame_infos").iterator();
 
-            while(frameInfos.hasNext()){
+            while (frameInfos.hasNext()) {
                 JsonNode frame = frameInfos.next();
                 CaptubeImage captubeImage = new CaptubeImage();
                 captubeImage.setImagePath(frame.get("img_path").asText());
