@@ -9,8 +9,8 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>captube.org</groupId>
-    <artifactId>demo</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <artifactId>CAPTUBE_BE</artifactId>
+    <version>1.0.0</version>
     <name>captube</name>
     <description>captube POC project</description>
 
