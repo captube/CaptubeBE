@@ -1,7 +1,5 @@
 package captube.org.captube.domain;
 
-import static sun.plugin.javascript.navig.JSType.URL;
-
 public class CaptureRequest {
     private String url;
     private String language;
