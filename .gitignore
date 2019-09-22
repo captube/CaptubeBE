@@ -21,5 +21,7 @@
 /.nb-gradle/
 /build/
 
-### CAPTUBE ###
-/pytube/
+### python runtime ###
+/venv/
+*.pyc
+
