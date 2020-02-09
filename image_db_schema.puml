@@ -1,0 +1,8 @@
+@startuml
+class image{
+    String url
+    String startTime
+    String endTime
+    String subtitle
+}
+@enduml
