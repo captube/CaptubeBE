@@ -6,7 +6,5 @@ from rest.v1.v1 import blueprint as api
 flask_app = Flask(__name__)
 flask_app.register_blueprint(api)
 
-app = Api(flask_app)
-
 if __name__ == '__main__':
-    app.run()
+    flask_app.run()
