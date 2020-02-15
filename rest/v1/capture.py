@@ -5,19 +5,17 @@ parser = reqparse.RequestParser()
 capture = Namespace('capture', description='capture api set')
 
 
-@capture.route('/getImages')
+@capture.route('/')
 class GetImages(Resource):
     def post(self):
-        parser.add_argument('url', type=str)
-        parser.add_argument('responseEncodingType', type=str)
-        parser.add_argument('language', type=str)
-        parser.add_argument('isNoSub', type=bool)
-        parser.add_argument('numberToCapture', type=int)
-        parser.add_argument('startTimeStamp', type=int)
-        parser.add_argument('endTimeStamp', type=int)
+        parser.add_argument('url', required=True, help='url cannot be null or empty', type=str)
+        parser.add_argument('language', required=False, type=str)
+        parser.add_argument('numberToCapture', required=False, type=int)
+        parser.add_argument('startTimeStamp', required=False, type=int)
+        parser.add_argument('endTimeStamp', required=False, type=int)
 
         args = parser.parse_args()
-        print (args)
+        print(args)
         # TODO Add core logic to capture
 
         return '', 200
