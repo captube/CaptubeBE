@@ -1,7 +1,6 @@
-from flask_restplus import Namespace, reqparse, Resource
+from flask_restplus import Namespace, reqparse, Resource, marshal, fields
 
 parser = reqparse.RequestParser()
-
 capture = Namespace('capture', description='capture api set')
 
 
@@ -15,7 +14,30 @@ class GetImages(Resource):
         parser.add_argument('endTimeStamp', required=False, type=int)
 
         args = parser.parse_args()
-        print(args)
-        # TODO Add core logic to capture
+        print(f'capture - incoming args {args}')
 
-        return '', 200
+        try:
+            result = self.capture(args)
+        except Exception as e:
+            print(f'Exception occured during capture {e}')
+            return 'Internal Server Error', 500
+        return marshal(result, captureResult), 200
+
+    def capture(self, args):
+        result = {}
+        # TODO Add core logic to capture
+        return result
+
+
+captureItem = capture.model('captureItems', {
+    'url': fields.String,
+    'startTime': fields.Integer,
+    'endTime': fields.Integer,
+    'subtitle': fields.String
+})
+
+captureResult = capture.model('CaptureResult', {
+    'id': fields.String,
+    'title': fields.String,
+    'captureItems': fields.Nested(captureItem)
+})

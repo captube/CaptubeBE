@@ -1,5 +1,4 @@
 from flask import Flask
-from flask_restplus import Api
 
 from rest.v1.v1 import blueprint as api
 
