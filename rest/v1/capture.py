@@ -39,5 +39,5 @@ captureItem = capture.model('captureItems', {
 captureResult = capture.model('CaptureResult', {
     'id': fields.String,
     'title': fields.String,
-    'captureItems': fields.Nested(captureItem)
+    'captureItems': fields.List(fields.Nested(captureItem))
 })
