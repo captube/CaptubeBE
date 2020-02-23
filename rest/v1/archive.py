@@ -21,20 +21,18 @@ class getArchiveList(Resource):
         except Exception as e:
             print(f'Exception occured during getPagedArchive {e}')
             return 'Internal Server Error', 500
-        return marshal(result, archiveResult), 200
+        return marshal(result, multiArchiveMetadata), 200
 
     def getPagedArchive(self, pageFrom, pageTo):
         print(f'getPagedArchive, from : {pageFrom} to :{pageTo}')
+        return {'archives':[]}
 
 
-archiveItem = archive.model('archiveItem', {
-    'url': fields.String,
-    'startTime': fields.Integer,
-    'endTime': fields.Integer,
-    'subtitle': fields.String
+singleArchiveMetadata = archive.model('singleArchiveMetadata', {
+    'id': fields.String,
+    'title': fields.String
 })
 
-archiveResult = archive.model('archive', {
-    'title': fields.String,
-    'items': fields.Nested(archiveItem)
+multiArchiveMetadata = archive.model('multiArchiveMetadata', {
+    'archives': fields.List(fields.Nested(singleArchiveMetadata))
 })
