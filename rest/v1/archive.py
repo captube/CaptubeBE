@@ -1,4 +1,8 @@
+import ast
+
 from flask_restplus import Namespace, reqparse, Resource, fields, marshal
+
+from business.v1.archive import Archive
 
 parser = reqparse.RequestParser()
 archive = Namespace('archive', description='archive api set')
@@ -17,15 +21,14 @@ class getArchiveList(Resource):
         print(f'archive/list - incoming args {args}')
 
         try:
-            result = self.getPagedArchive(args[self.PAGE_KEY], args[self.PAGE_SIZE])
+            # TODO : Need DI for Archive, not creating dynamically
+            result = Archive().getPagedArchive(
+                ast.literal_eval(args[self.PAGE_KEY]) if args[self.PAGE_KEY] is not None else None
+                , args[self.PAGE_SIZE])
         except Exception as e:
             print(f'Exception occured during getPagedArchive {e}')
             return 'Internal Server Error', 500
         return marshal(result, multiArchiveMetadata), 200
-
-    def getPagedArchive(self, pageKey, pageSize):
-        print(f'getPagedArchive, from : {pageKey} to :{pageSize}')
-        return {'archives': []}
 
 
 singleArchiveMetadata = archive.model('singleArchiveMetadata', {
@@ -34,6 +37,7 @@ singleArchiveMetadata = archive.model('singleArchiveMetadata', {
 })
 
 multiArchiveMetadata = archive.model('multiArchiveMetadata', {
+    'nextPageKey': fields.Wildcard(fields.String),
     'archives': fields.List(fields.Nested(singleArchiveMetadata))
 })
 
@@ -45,15 +49,12 @@ class getArchive(Resource):
         print(f'archive item - id {id}')
 
         try:
-            result = self.getArchive(id)
+            # TODO : Need DI for Archive, not creating dynamically
+            result = Archive().getArchive(id)
         except Exception as e:
             print(f'Exception occured during getArchive {e}')
             return 'Internal Server Error', 500
         return marshal(result, archiveItem), 200
-
-    def getArchive(self, id):
-        print(f'getArchive {id}')
-        return {'title': '', 'items': [{'url': '', 'startTime': 0, 'endTime': 0, 'subtitle': ''}]}
 
 
 captureItem = archive.model('captureItem', {
