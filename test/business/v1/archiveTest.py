@@ -10,6 +10,66 @@ from business.v1.archive import captureItemTable
 
 class TestArchive(unittest.TestCase):
 
+    def test_getPagedArchive(self):
+        archive = Archive()
+        archives = []
+        lastEvaluatedKey = {}
+        pageSize = 10
+        archivesFromAWS = {'Items': archives, 'LastEvaluatedKey': lastEvaluatedKey}
+        archiveTable.scan = MagicMock(return_value=archivesFromAWS)
+
+        response = archive.getPagedArchive(None, None)
+
+        archiveTable.scan.assert_called_with(Limit=archive._DEFAULT_PAGE_SIZE)
+        self.assertEqual({'archives': archivesFromAWS['Items'], 'nextPageKey': archivesFromAWS['LastEvaluatedKey']},
+                         response)
+
+        response = archive.getPagedArchive(lastEvaluatedKey, None)
+
+        archiveTable.scan.assert_called_with(Limit=archive._DEFAULT_PAGE_SIZE, ExclusiveStartKey=lastEvaluatedKey)
+        self.assertEqual({'archives': archivesFromAWS['Items'], 'nextPageKey': archivesFromAWS['LastEvaluatedKey']},
+                         response)
+
+        response = archive.getPagedArchive(None, pageSize)
+
+        archiveTable.scan.assert_called_with(Limit=pageSize)
+        self.assertEqual({'archives': archivesFromAWS['Items'], 'nextPageKey': archivesFromAWS['LastEvaluatedKey']},
+                         response)
+
+        response = archive.getPagedArchive(lastEvaluatedKey, pageSize)
+
+        archiveTable.scan.assert_called_with(Limit=pageSize, ExclusiveStartKey=lastEvaluatedKey)
+        self.assertEqual({'archives': archivesFromAWS['Items'], 'nextPageKey': archivesFromAWS['LastEvaluatedKey']},
+                         response)
+
+    def test_getPagedArchive_to_end(self):
+        archive = Archive()
+        archives = []
+        lastEvaluatedKey = "LastEvaluatedKey"
+        pageSize = 10
+        archivesFromAWS = {'Items': archives}
+        archiveTable.scan = MagicMock(return_value=archivesFromAWS)
+
+        response = archive.getPagedArchive(None, None)
+
+        archiveTable.scan.assert_called_with(Limit=archive._DEFAULT_PAGE_SIZE)
+        self.assertEqual({'archives': archivesFromAWS['Items']}, response)
+
+        response = archive.getPagedArchive(lastEvaluatedKey, None)
+
+        archiveTable.scan.assert_called_with(Limit=archive._DEFAULT_PAGE_SIZE, ExclusiveStartKey=lastEvaluatedKey)
+        self.assertEqual({'archives': archivesFromAWS['Items']}, response)
+
+        response = archive.getPagedArchive(None, pageSize)
+
+        archiveTable.scan.assert_called_with(Limit=pageSize)
+        self.assertEqual({'archives': archivesFromAWS['Items']}, response)
+
+        response = archive.getPagedArchive(lastEvaluatedKey, pageSize)
+
+        archiveTable.scan.assert_called_with(Limit=pageSize, ExclusiveStartKey=lastEvaluatedKey)
+        self.assertEqual({'archives': archivesFromAWS['Items']}, response)
+
     def test_archiveid(self):
         archive = Archive()
         id = 'id'

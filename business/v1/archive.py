@@ -8,10 +8,27 @@ captureItemTable = dynamodb.Table('captureItem')
 
 
 class Archive:
+    _DEFAULT_PAGE_SIZE = 25
+
     def getPagedArchive(self, pageKey, pageSize):
-        print(f'getPagedArchive, from : {pageKey} to :{pageSize}')
-        # TODO Call AWS S3 APIs with boto
-        return {'archives': []}
+        print(f'getPagedArchive, pageKey : {pageKey} pageSize :{pageSize}')
+        limit = self._DEFAULT_PAGE_SIZE if pageSize is None else pageSize
+        if pageKey is None:
+            print(f'getPagedArchive - query only with limit {limit}')
+            queryResult = archiveTable.scan(Limit=int(limit))
+        else:
+            print(f'getPagedArchive - query with limit {limit} and ExclusiveStartKey {pageKey}')
+            queryResult = archiveTable.scan(
+                Limit=int(limit),
+                ExclusiveStartKey=pageKey)
+
+        print(f'paged archives from dynamo : {queryResult}')
+
+        response = {'archives': queryResult['Items'], 'nextPageKey': queryResult['LastEvaluatedKey']} \
+            if 'LastEvaluatedKey' in queryResult else \
+            {'archives': queryResult['Items']}
+
+        return response
 
     def getArchive(self, id):
         print(f'getArchive {id}')
