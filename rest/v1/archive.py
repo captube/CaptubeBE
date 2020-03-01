@@ -6,25 +6,25 @@ archive = Namespace('archive', description='archive api set')
 
 @archive.route('/list')
 class getArchiveList(Resource):
-    PAGE_FROM = 'pageFrom'
-    PAGE_TO = 'pageTo'
+    PAGE_KEY = 'pageKey'
+    PAGE_SIZE = 'pageSize'
 
     def get(self):
-        parser.add_argument(self.PAGE_FROM, required=True, type=str, location='args')
-        parser.add_argument(self.PAGE_TO, required=True, type=str, location='args')
+        parser.add_argument(self.PAGE_KEY, required=False, type=str, location='args')
+        parser.add_argument(self.PAGE_SIZE, required=False, type=str, location='args')
 
         args = parser.parse_args()
         print(f'archive/list - incoming args {args}')
 
         try:
-            result = self.getPagedArchive(args[self.PAGE_FROM], args[self.PAGE_TO])
+            result = self.getPagedArchive(args[self.PAGE_KEY], args[self.PAGE_SIZE])
         except Exception as e:
             print(f'Exception occured during getPagedArchive {e}')
             return 'Internal Server Error', 500
         return marshal(result, multiArchiveMetadata), 200
 
-    def getPagedArchive(self, pageFrom, pageTo):
-        print(f'getPagedArchive, from : {pageFrom} to :{pageTo}')
+    def getPagedArchive(self, pageKey, pageSize):
+        print(f'getPagedArchive, from : {pageKey} to :{pageSize}')
         return {'archives': []}
 
 
