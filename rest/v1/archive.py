@@ -1,3 +1,5 @@
+import ast
+
 from flask_restplus import Namespace, reqparse, Resource, fields, marshal
 
 from business.v1.archive import Archive
@@ -20,11 +22,14 @@ class getArchiveList(Resource):
 
         try:
             # TODO : Need DI for Archive, not creating dynamically
-            result = Archive().getPagedArchive(args[self.PAGE_KEY], args[self.PAGE_SIZE])
+            result = Archive().getPagedArchive(
+                ast.literal_eval(args[self.PAGE_KEY]) if args[self.PAGE_KEY] is not None else None
+                , args[self.PAGE_SIZE])
         except Exception as e:
             print(f'Exception occured during getPagedArchive {e}')
             return 'Internal Server Error', 500
         return marshal(result, multiArchiveMetadata), 200
+
 
 singleArchiveMetadata = archive.model('singleArchiveMetadata', {
     'id': fields.String,
@@ -32,6 +37,7 @@ singleArchiveMetadata = archive.model('singleArchiveMetadata', {
 })
 
 multiArchiveMetadata = archive.model('multiArchiveMetadata', {
+    'nextPageKey': fields.Wildcard(fields.String),
     'archives': fields.List(fields.Nested(singleArchiveMetadata))
 })
 
