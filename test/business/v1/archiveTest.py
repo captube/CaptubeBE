@@ -75,7 +75,8 @@ class TestArchive(unittest.TestCase):
         id = 'id'
         archiveTitle = 'archiveTitle'
         archiveId = 'archiveId'
-        archiveFromAWS = {'Item': {'id': archiveId, 'title': archiveTitle}}
+        thumbnailUrl = 'thumbnailUrl'
+        archiveFromAWS = {'Item': {'id': archiveId, 'thumbnailUrl': thumbnailUrl, 'title': archiveTitle}}
         captureItemsFromAWS = {'Items': []}
         archiveTable.get_item = MagicMock(return_value=archiveFromAWS)
         captureItemTable.scan = MagicMock(return_value=captureItemsFromAWS)
@@ -84,4 +85,5 @@ class TestArchive(unittest.TestCase):
 
         archiveTable.get_item.assert_called_with(Key={'id': id})
         captureItemTable.scan.assert_called_with(FilterExpression=Attr('archiveId').eq(archiveId))
-        self.assertEqual({'title': archiveTitle, 'items': captureItemsFromAWS['Items']}, response)
+        self.assertEqual({'title': archiveTitle, 'thumbnailUrl': thumbnailUrl, 'items': captureItemsFromAWS['Items']},
+                         response)
