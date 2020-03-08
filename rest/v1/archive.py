@@ -33,6 +33,7 @@ class getArchiveList(Resource):
 
 singleArchiveMetadata = archive.model('singleArchiveMetadata', {
     'id': fields.String,
+    'thumbnailUrl': fields.String,
     'title': fields.String
 })
 
@@ -66,5 +67,6 @@ captureItem = archive.model('captureItem', {
 
 archiveItem = archive.model('archive', {
     'title': fields.String,
+    'thumbnailUrl': fields.String,
     'items': fields.Nested(captureItem)
 })
