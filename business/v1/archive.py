@@ -47,6 +47,7 @@ class Archive:
 
         response = {
             'title': archive['title'],
+            'thumbnailUrl': archive['thumbnailUrl'],
             'items': captureItems
         }
         print(f'getArchive response : {response}')
