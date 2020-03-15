@@ -1,3 +1,7 @@
+from core import capture
+from core import run
+
+
 class Capture:
     def capture(self, url, language, numberToCapture, startTimeStamp, endTimeStamp):
         captureItems = self._convertToCaptureItems(
@@ -6,9 +10,10 @@ class Capture:
         return captureItems
 
     def _executeCaptureScript(self, url, language, numberToCapture, startTimeStamp, endTimeStamp):
-        result = {}
-        # TODO Add core logic to capture
-        return result
+        video_info = run.make_youtube_info(url, "", language)
+        video_info.save_json()
+        capture.capture_by_subs(video_info)
+        return video_info
 
     def _convertToCaptureItems(self, captureItemsByScript):
         convretedItems = {}
