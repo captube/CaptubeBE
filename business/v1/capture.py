@@ -1,14 +1,21 @@
+import json
 import uuid
+from decimal import Decimal
 
+from business import session
 from core import capture
 from core import run
 
 
 class Capture:
+    dynamodb = session.resource('dynamodb', region_name='ap-northeast-2')
+    archiveTable = dynamodb.Table('archive')
+    captureItemTable = dynamodb.Table('captureItem')
+
     def capture(self, url, language, numberToCapture, startTimeStamp, endTimeStamp):
         captureItems = self._convertToCaptureItems(
             self._executeCaptureScript(url, language, numberToCapture, startTimeStamp, endTimeStamp))
-        self._storeImages(captureItems)
+        self._store(captureItems)
         return captureItems
 
     def _executeCaptureScript(self, url, language, numberToCapture, startTimeStamp, endTimeStamp):
@@ -37,6 +44,42 @@ class Capture:
 
         return convretedItems
 
-    def _storeImages(self, captureItems):
-        # TODO Call AWS S3 APIs
+    def _store(self, convertedItems):
+        urlAdjustedItems = self._storeImages(convertedItems)
+        self._storeMetadata(urlAdjustedItems)
+        return
+
+    def _storeImages(self, convertedItems):
+        return
+
+    def _storeMetadata(self, urlAdjustedItems):
+        try:
+            response = self.archiveTable.put_item(
+                Item={
+                    'id': urlAdjustedItems['id'],
+                    'title': urlAdjustedItems['title'],
+                    'thumbnailUrl': urlAdjustedItems['thumbnailUrl']
+                })
+
+            print(f'Succeed to store Archive {urlAdjustedItems["id"]}')
+            print(json.dumps(response, indent=4))
+
+            for captureItem in urlAdjustedItems["captureItems"]:
+                response = self.captureItemTable.put_item(
+                    Item=json.loads(json.dumps({
+                        "id": captureItem["id"],
+                        "archiveId": urlAdjustedItems["id"],
+                        "startTime": captureItem["startTime"],
+                        "endTime": captureItem["endTime"],
+                        "subtitle": captureItem["subtitle"],
+                        "url": captureItem["url"]
+                    }), parse_float=Decimal))
+
+                print(f'Succeed to store captureItem {captureItem["id"]}')
+                print(json.dumps(response, indent=4))
+
+        except Exception as e:
+            # TODO : Need exception handling logic, such as removing failed item.
+            raise e
+
         return

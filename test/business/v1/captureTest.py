@@ -1,5 +1,7 @@
+import json
 import unittest
 import uuid
+from decimal import Decimal
 from unittest.mock import MagicMock
 
 from business.v1.capture import Capture
@@ -14,13 +16,16 @@ class TestCapture(unittest.TestCase):
         numberToCapture = "numberToCapture"
         startTimeStamp = "startTimeStamp"
         endTimeStamp = "endTimeStamp"
+        convertedCaptureItems = []
         capture = Capture()
         capture._executeCaptureScript = MagicMock(return_value={})
-        capture._convertToCaptureItems = MagicMock(return_value={})
+        capture._convertToCaptureItems = MagicMock(return_value=convertedCaptureItems)
+        capture._store = MagicMock(return_value={})
 
         capture.capture(url, language, numberToCapture, startTimeStamp, endTimeStamp)
 
         capture._executeCaptureScript.assert_called_with(url, language, numberToCapture, startTimeStamp, endTimeStamp)
+        capture._store(convertedCaptureItems)
 
     def test_executeCaptureScript(self):
         url = "url"
@@ -103,3 +108,67 @@ class TestCapture(unittest.TestCase):
                          convertedCaptureItems["captureItems"][2]["endTime"])
         self.assertEqual(f'{random_uuid}_{captureItemsByScript["frame_infos"][2]["frame_num"]}',
                          convertedCaptureItems["captureItems"][2]["id"])
+
+    def test_store(self):
+        convertedCaptureItems = []
+        urlAdjustedCaptureItems = []
+        capture = Capture()
+        capture._storeImages = MagicMock(return_value=urlAdjustedCaptureItems)
+        capture._storeMetadata = MagicMock(return_value={})
+
+        capture._store(convertedCaptureItems)
+
+        capture._storeImages.assert_called_with(convertedCaptureItems)
+        capture._storeMetadata.assert_called_with(urlAdjustedCaptureItems)
+
+    def test__storeMetadata(self):
+        id = "id"
+        title = "title"
+        thumbnailUrl = "thumbnailUrl"
+
+        captureItems = [{"id": "id1",
+                         "startTime": "startTime1",
+                         "endTime": "endTime1",
+                         "subtitle": "subtitle1",
+                         "url": "url1"},
+                        {"id": "id2",
+                         "startTime": "startTime2",
+                         "endTime": "endTime2",
+                         "subtitle": "subtitle2",
+                         "url": "url2"}]
+        urlAdjustedItems = {
+            'id': id,
+            'title': title,
+            'thumbnailUrl': thumbnailUrl,
+            'captureItems': captureItems
+        }
+        capture = Capture()
+        Capture.archiveTable = MagicMock()
+        Capture.archiveTable.put_item = MagicMock(return_value={})
+        Capture.captureItemTable = MagicMock()
+        Capture.captureItemTable.put_item = MagicMock(return_value={})
+
+        capture._storeMetadata(urlAdjustedItems)
+
+        Capture.archiveTable.put_item.assert_called_with(Item={
+            'id': urlAdjustedItems['id'],
+            'title': urlAdjustedItems['title'],
+            'thumbnailUrl': urlAdjustedItems['thumbnailUrl']
+        })
+        # FIXME Cannot record previous call
+        # Capture.captureItemTable.put_item.assert_called_with(Item={
+        #     "id": urlAdjustedItems['captureItems'][0]["id"],
+        #     "archiveId": urlAdjustedItems["id"],
+        #     "startTime": urlAdjustedItems['captureItems'][0]["startTime"],
+        #     "endTime": urlAdjustedItems['captureItems'][0]["endTime"],
+        #     "subtitle": urlAdjustedItems['captureItems'][0]["subtitle"],
+        #     "url": urlAdjustedItems['captureItems'][0]["url"]
+        # })
+        Capture.captureItemTable.put_item.assert_called_with(Item=json.loads(json.dumps({
+            "id": urlAdjustedItems['captureItems'][1]["id"],
+            "archiveId": urlAdjustedItems["id"],
+            "startTime": urlAdjustedItems['captureItems'][1]["startTime"],
+            "endTime": urlAdjustedItems['captureItems'][1]["endTime"],
+            "subtitle": urlAdjustedItems['captureItems'][1]["subtitle"],
+            "url": urlAdjustedItems['captureItems'][1]["url"]
+        }), parse_float=Decimal))
