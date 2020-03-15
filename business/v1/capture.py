@@ -18,22 +18,26 @@ class Capture:
     s3_client = session.client('s3')
 
     def capture(self, url, language, numberToCapture, startTimeStamp, endTimeStamp):
-        captureItems = self._convertToCaptureItems(
-            self._executeCaptureScript(url, language, numberToCapture, startTimeStamp, endTimeStamp))
+        print(f'capture, {url}, {language}, {numberToCapture}, {startTimeStamp}, {endTimeStamp}')
+        id = str(uuid.uuid4())
+        video_info = self._executeCaptureScript(url, language, numberToCapture, startTimeStamp, endTimeStamp, id)
+        captureItems = self._convertToCaptureItems(video_info, id)
         self._store(captureItems)
         return captureItems
 
-    def _executeCaptureScript(self, url, language, numberToCapture, startTimeStamp, endTimeStamp):
-        video_info = run.make_youtube_info(url, "", language)
+    def _executeCaptureScript(self, url, language, numberToCapture, startTimeStamp, endTimeStamp, name):
+        print(f'execute capture script, {url}, {language}, {numberToCapture}, {startTimeStamp}, {endTimeStamp}, {name}')
+        video_info = run.make_youtube_info(url, name, language)
         video_info.save_json()
         capture.capture_by_subs(video_info)
+        print(f'video_info : {video_info}')
         return video_info
 
-    def _convertToCaptureItems(self, captureItemsByScript):
+    def _convertToCaptureItems(self, captureItemsByScript, id):
         convretedItems = {
             "title": captureItemsByScript["title"],
             "thumbnailUrl": captureItemsByScript["thumbnail"],
-            "id": uuid.uuid4(),
+            "id": id,
             "captureItems": []
         }
 
@@ -50,6 +54,7 @@ class Capture:
         return convretedItems
 
     def _store(self, convertedItems):
+        print(f'store, {convertedItems}')
         urlAdjustedItems = self._storeImages(convertedItems)
         self._storeMetadata(urlAdjustedItems)
         return

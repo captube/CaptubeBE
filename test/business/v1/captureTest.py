@@ -17,6 +17,8 @@ class TestCapture(unittest.TestCase):
         startTimeStamp = "startTimeStamp"
         endTimeStamp = "endTimeStamp"
         convertedCaptureItems = []
+        random_uuid = 'random_uuid'
+        uuid.uuid4 = MagicMock(return_value=random_uuid)
         capture = Capture()
         capture._executeCaptureScript = MagicMock(return_value={})
         capture._convertToCaptureItems = MagicMock(return_value=convertedCaptureItems)
@@ -24,12 +26,14 @@ class TestCapture(unittest.TestCase):
 
         capture.capture(url, language, numberToCapture, startTimeStamp, endTimeStamp)
 
-        capture._executeCaptureScript.assert_called_with(url, language, numberToCapture, startTimeStamp, endTimeStamp)
-        capture._store(convertedCaptureItems)
+        capture._executeCaptureScript.assert_called_with(url, language, numberToCapture, startTimeStamp, endTimeStamp,
+                                                         random_uuid)
+        capture._store.assert_called_with(convertedCaptureItems)
 
     def test_executeCaptureScript(self):
         url = "url"
         language = "language"
+        name = "name"
         numberToCapture = 0
         startTimeStamp = 0
         endTimeStamp = 1
@@ -39,9 +43,9 @@ class TestCapture(unittest.TestCase):
         capture.capture_by_subs = MagicMock(return_value={})
         captureBusiness = Capture()
 
-        captureBusiness._executeCaptureScript(url, language, numberToCapture, startTimeStamp, endTimeStamp)
+        captureBusiness._executeCaptureScript(url, language, numberToCapture, startTimeStamp, endTimeStamp, name)
 
-        run.make_youtube_info.assert_called_with(url, "", language)
+        run.make_youtube_info.assert_called_with(url, name, language)
         video_info.save_json.assert_called_with()
         capture.capture_by_subs.assert_called_with(video_info)
 
@@ -70,10 +74,9 @@ class TestCapture(unittest.TestCase):
             ]
         }
         random_uuid = 'random_uuid'
-        uuid.uuid4 = MagicMock(return_value=random_uuid)
         capture = Capture()
 
-        convertedCaptureItems = capture._convertToCaptureItems(captureItemsByScript)
+        convertedCaptureItems = capture._convertToCaptureItems(captureItemsByScript, random_uuid)
 
         self.assertEqual(captureItemsByScript["title"], convertedCaptureItems["title"])
         self.assertEqual(random_uuid, convertedCaptureItems["id"])
