@@ -1,4 +1,5 @@
 import json
+import os
 import uuid
 from decimal import Decimal
 
@@ -8,9 +9,13 @@ from core import run
 
 
 class Capture:
+    S3_BUCKET = "captube.captures"
+    S3_PREFIX = "https://s3.ap-northeast-2.amazonaws.com/captube.captures/"
     dynamodb = session.resource('dynamodb', region_name='ap-northeast-2')
     archiveTable = dynamodb.Table('archive')
     captureItemTable = dynamodb.Table('captureItem')
+
+    s3_client = session.client('s3')
 
     def capture(self, url, language, numberToCapture, startTimeStamp, endTimeStamp):
         captureItems = self._convertToCaptureItems(
@@ -50,7 +55,22 @@ class Capture:
         return
 
     def _storeImages(self, convertedItems):
-        return
+        try:
+            for captureItem in convertedItems["captureItems"]:
+                captureFilePath = captureItem["url"]
+                captureFileName = os.path.basename(captureItem["url"])
+                captureItem["url"] = self._convertAsS3Url(captureFileName)
+                self.s3_client.upload_file(captureFilePath, self.S3_BUCKET, captureFileName, ExtraArgs={
+                    'ContentType': 'image/jpeg'
+                })
+        except Exception as e:
+            # TODO : Need exception handling logic, such as removing failed item.
+            raise e
+
+        return convertedItems
+
+    def _convertAsS3Url(self, fileName):
+        return f'{self.S3_PREFIX}{fileName}'
 
     def _storeMetadata(self, urlAdjustedItems):
         try:

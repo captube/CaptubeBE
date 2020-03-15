@@ -172,3 +172,52 @@ class TestCapture(unittest.TestCase):
             "subtitle": urlAdjustedItems['captureItems'][1]["subtitle"],
             "url": urlAdjustedItems['captureItems'][1]["url"]
         }), parse_float=Decimal))
+
+    def test__convertAsS3Url(self):
+        fileName = "MieyJ34_01.png"
+        capture = Capture()
+
+        convertedPath = capture._convertAsS3Url(fileName)
+
+        self.assertEqual(f'{capture.S3_PREFIX}{fileName}', convertedPath)
+
+    def test__storeImages(self):
+        id = "id"
+        title = "title"
+        thumbnailUrl = "thumbnailUrl"
+        fileName1 = "MieyJ34_01.png"
+        url1 = f"/home/captube/MieyJ34/imgs/{fileName1}"
+        fileName2 = "MieyJ34_02.png"
+        url2 = f"/home/captube/MieyJ34/imgs/{fileName2}"
+
+        captureItems = [{"id": "id1",
+                         "startTime": "startTime1",
+                         "endTime": "endTime1",
+                         "subtitle": "subtitle1",
+                         "url": url1},
+                        {"id": "id2",
+                         "startTime": "startTime2",
+                         "endTime": "endTime2",
+                         "subtitle": "subtitle2",
+                         "url": url2}]
+        convertedItems = {
+            'id': id,
+            'title': title,
+            'thumbnailUrl': thumbnailUrl,
+            'captureItems': captureItems
+        }
+        capture = Capture()
+        Capture.s3_client = MagicMock()
+        Capture.s3_client.upload_file = MagicMock()
+
+        adjustedItems = capture._storeImages(convertedItems)
+
+        self.assertEqual(f'{capture.S3_PREFIX}{fileName1}', adjustedItems['captureItems'][0]['url'])
+        self.assertEqual(f'{capture.S3_PREFIX}{fileName2}', adjustedItems['captureItems'][1]['url'])
+        # FIXME Cannot record previous call
+        # Capture.s3_client.upload_file.assert_called_with(url1, capture.S3_BUCKET, fileName1, ExtraArgs={
+        #                     'ContentType': 'image/jpeg'
+        #                 })
+        Capture.s3_client.upload_file.assert_called_with(url2, capture.S3_BUCKET, fileName2, ExtraArgs={
+            'ContentType': 'image/jpeg'
+        })
