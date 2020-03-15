@@ -218,15 +218,19 @@ class TestCapture(unittest.TestCase):
 
         adjustedItems = capture._storeImages(convertedItems)
 
-        self.assertEqual(f'{capture.S3_PREFIX}{fileName1}', adjustedItems['captureItems'][0]['url'])
-        self.assertEqual(f'{capture.S3_PREFIX}{fileName2}', adjustedItems['captureItems'][1]['url'])
+        self.assertEqual(f'{capture.S3_PREFIX}{convertedItems["id"]}_{fileName1}',
+                         adjustedItems['captureItems'][0]['url'])
+        self.assertEqual(f'{capture.S3_PREFIX}{convertedItems["id"]}_{fileName2}',
+                         adjustedItems['captureItems'][1]['url'])
         # FIXME Cannot record previous call
-        # Capture.s3_client.upload_file.assert_called_with(url1, capture.S3_BUCKET, fileName1, ExtraArgs={
-        #                     'ContentType': 'image/jpeg'
-        #                 })
-        Capture.s3_client.upload_file.assert_called_with(url2, capture.S3_BUCKET, fileName2, ExtraArgs={
-            'ContentType': 'image/jpeg'
-        })
+
+        # Capture.s3_client.upload_file.assert_called_with(url1, capture.S3_BUCKET, f'{convertedItems["id"]}_{fileName1}', ExtraArgs={
+        #             'ContentType': 'image/jpeg'
+        #         })
+        Capture.s3_client.upload_file.assert_called_with(url2, capture.S3_BUCKET, f'{convertedItems["id"]}_{fileName2}',
+                                                         ExtraArgs={
+                                                             'ContentType': 'image/jpeg'
+                                                         })
 
     def test__clearLocalTemporary(self):
         capture = Capture()

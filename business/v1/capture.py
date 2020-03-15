@@ -70,7 +70,7 @@ class Capture:
         try:
             for captureItem in convertedItems["captureItems"]:
                 captureFilePath = captureItem["url"]
-                captureFileName = os.path.basename(captureItem["url"])
+                captureFileName = f'{convertedItems["id"]}_{os.path.basename(captureItem["url"])}'
                 captureItem["url"] = self._convertAsS3Url(captureFileName)
                 self.s3_client.upload_file(captureFilePath, self.S3_BUCKET, captureFileName, ExtraArgs={
                     'ContentType': 'image/jpeg'
