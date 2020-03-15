@@ -1,3 +1,6 @@
+import sys
+import traceback
+
 from flask_restplus import Namespace, reqparse, Resource, marshal, fields
 
 from business.v1.capture import Capture
@@ -24,9 +27,11 @@ class GetImages(Resource):
             numberToCapture = args['numberToCapture']
             startTimeStamp = args['startTimeStamp']
             endTimeStamp = args['endTimeStamp']
+            # TODO Capture need to be DI not Object creation
             result = Capture().capture(url, language, numberToCapture, startTimeStamp, endTimeStamp)
         except Exception as e:
             print(f'Exception occured during capture {e}')
+            traceback.print_exc(file=sys.stdout)
             return 'Internal Server Error', 500
         return marshal(result, captureResult), 200
 

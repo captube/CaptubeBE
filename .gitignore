@@ -25,3 +25,4 @@
 /venv/
 *.pyc
 
+test/business/v1/*.log
