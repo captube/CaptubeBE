@@ -1,4 +1,5 @@
 import json
+import shutil
 import unittest
 import uuid
 from decimal import Decimal
@@ -23,12 +24,14 @@ class TestCapture(unittest.TestCase):
         capture._executeCaptureScript = MagicMock(return_value={})
         capture._convertToCaptureItems = MagicMock(return_value=convertedCaptureItems)
         capture._store = MagicMock(return_value={})
+        capture._clearLocalTemporary = MagicMock()
 
         capture.capture(url, language, numberToCapture, startTimeStamp, endTimeStamp)
 
         capture._executeCaptureScript.assert_called_with(url, language, numberToCapture, startTimeStamp, endTimeStamp,
                                                          random_uuid)
         capture._store.assert_called_with(convertedCaptureItems)
+        capture._clearLocalTemporary.assert_called_with(random_uuid)
 
     def test_executeCaptureScript(self):
         url = "url"
@@ -224,3 +227,27 @@ class TestCapture(unittest.TestCase):
         Capture.s3_client.upload_file.assert_called_with(url2, capture.S3_BUCKET, fileName2, ExtraArgs={
             'ContentType': 'image/jpeg'
         })
+
+    def test__clearLocalTemporary(self):
+        capture = Capture()
+        id = "id"
+        shutil.rmtree = MagicMock()
+
+        capture._clearLocalTemporary(id)
+
+        shutil.rmtree.assert_called_with(f'{capture.RESULT_DIR}/{id}')
+
+    def test_capture_call__clearLocalTemporary_when_exception(self):
+        capture = Capture()
+        capture._executeCaptureScript = MagicMock()
+        capture._executeCaptureScript.side_effect = Exception("")
+        capture._clearLocalTemporary = MagicMock()
+        random_uuid = 'random_uuid'
+        uuid.uuid4 = MagicMock(return_value=random_uuid)
+
+        try:
+            capture.capture("url", "language", 0, 1, 2)
+        except Exception as e:
+            print(e)
+
+        capture._clearLocalTemporary.assert_called_with(random_uuid)

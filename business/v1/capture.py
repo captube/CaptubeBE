@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import uuid
 from decimal import Decimal
 
@@ -9,6 +10,7 @@ from core import run
 
 
 class Capture:
+    RESULT_DIR = "results"
     S3_BUCKET = "captube.captures"
     S3_PREFIX = "https://s3.ap-northeast-2.amazonaws.com/captube.captures/"
     dynamodb = session.resource('dynamodb', region_name='ap-northeast-2')
@@ -20,9 +22,14 @@ class Capture:
     def capture(self, url, language, numberToCapture, startTimeStamp, endTimeStamp):
         print(f'capture, {url}, {language}, {numberToCapture}, {startTimeStamp}, {endTimeStamp}')
         id = str(uuid.uuid4())
-        video_info = self._executeCaptureScript(url, language, numberToCapture, startTimeStamp, endTimeStamp, id)
-        captureItems = self._convertToCaptureItems(video_info, id)
-        self._store(captureItems)
+
+        try:
+            video_info = self._executeCaptureScript(url, language, numberToCapture, startTimeStamp, endTimeStamp, id)
+            captureItems = self._convertToCaptureItems(video_info, id)
+            self._store(captureItems)
+        finally:
+            self._clearLocalTemporary(id)
+
         return captureItems
 
     def _executeCaptureScript(self, url, language, numberToCapture, startTimeStamp, endTimeStamp, name):
@@ -107,4 +114,8 @@ class Capture:
             # TODO : Need exception handling logic, such as removing failed item.
             raise e
 
+        return
+
+    def _clearLocalTemporary(self, id):
+        shutil.rmtree(f'{self.RESULT_DIR}/{id}')
         return
