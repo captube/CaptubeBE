@@ -10,7 +10,7 @@ capture = Namespace('capture', description='capture api set')
 class GetImages(Resource):
     def post(self):
         parser.add_argument('url', required=True, help='url cannot be null or empty', type=str)
-        parser.add_argument('language', required=False, type=str)
+        parser.add_argument('language', required=False, type=str, default="en")
         parser.add_argument('numberToCapture', required=False, type=int)
         parser.add_argument('startTimeStamp', required=False, type=int)
         parser.add_argument('endTimeStamp', required=False, type=int)
