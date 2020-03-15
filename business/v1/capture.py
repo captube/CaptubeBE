@@ -1,3 +1,5 @@
+import uuid
+
 from core import capture
 from core import run
 
@@ -16,7 +18,23 @@ class Capture:
         return video_info
 
     def _convertToCaptureItems(self, captureItemsByScript):
-        convretedItems = {}
+        convretedItems = {
+            "title": captureItemsByScript["title"],
+            "thumbnailUrl": captureItemsByScript["thumbnail"],
+            "id": uuid.uuid4(),
+            "captureItems": []
+        }
+
+        frame_infos = captureItemsByScript["frame_infos"]
+        for frame_info in frame_infos:
+            convretedItems["captureItems"].append({
+                "id": f'{convretedItems["id"]}_{frame_info["frame_num"]}',
+                "url": frame_info["img_path"],
+                "startTime": frame_info["time_info"],
+                "endTime": frame_info["time_info"],
+                "subtitle": frame_info["script"]
+            })
+
         return convretedItems
 
     def _storeImages(self, captureItems):
