@@ -1,10 +1,9 @@
 import ast
 
-from flask_restplus import Namespace, reqparse, Resource, fields, marshal
+from flask_restplus import Namespace, Resource, fields, marshal
 
 from business.v1.archive import Archive
 
-parser = reqparse.RequestParser()
 archive = Namespace('archive', description='archive api set')
 
 
@@ -13,11 +12,15 @@ class getArchiveList(Resource):
     PAGE_KEY = 'pageKey'
     PAGE_SIZE = 'pageSize'
 
-    def get(self):
-        parser.add_argument(self.PAGE_KEY, required=False, type=str, location='args')
-        parser.add_argument(self.PAGE_SIZE, required=False, type=str, location='args')
+    parser = archive.parser()
 
-        args = parser.parse_args()
+    parser.add_argument(PAGE_KEY, required=False, type=str, location='args')
+    parser.add_argument(PAGE_SIZE, required=False, type=str, location='args')
+
+    @archive.expect(parser)
+    def get(self):
+
+        args = self.parser.parse_args()
         print(f'archive/list - incoming args {args}')
 
         try:

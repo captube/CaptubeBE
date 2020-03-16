@@ -26,3 +26,4 @@
 *.pyc
 
 test/business/v1/*.log
+results/
