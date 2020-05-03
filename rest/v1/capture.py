@@ -29,7 +29,7 @@ captureResult = capture.model('CaptureResult', {
 })
 
 
-@capture.route('/')
+@capture.route('')
 class GetImages(Resource):
     parser = capture.parser()
 
