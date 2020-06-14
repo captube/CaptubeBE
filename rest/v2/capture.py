@@ -3,6 +3,8 @@ import traceback
 
 from flask_restplus import Namespace, Resource, marshal, fields
 
+from business.v2.capture import Capture
+
 capture = Namespace('capture', description='capture api set')
 
 captureParams = capture.model('CaptureParams', {
@@ -78,8 +80,8 @@ class GetAvailableLanguage(Resource):
 
         try:
             url = args['url']
-            # TODO Call v2 business logic to get available language
-            result = {}
+            # TODO Capture need to be DI not Object creation
+            result = Capture().getAvailableLanguage(url)
         except Exception as e:
             print(f'Exception occured during capture {e}')
             traceback.print_exc(file=sys.stdout)
