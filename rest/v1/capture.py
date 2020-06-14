@@ -29,7 +29,10 @@ captureResult = capture.model('CaptureResult', {
 })
 
 
-@capture.route('')
+@capture.route('',
+               doc={
+                   "deprecated": True
+               })
 class GetImages(Resource):
     parser = capture.parser()
 

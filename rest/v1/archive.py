@@ -7,7 +7,10 @@ from business.v1.archive import Archive
 archive = Namespace('archive', description='archive api set')
 
 
-@archive.route('/list')
+@archive.route('/list',
+               doc={
+                   "deprecated": True
+               })
 class getArchiveList(Resource):
     PAGE_KEY = 'pageKey'
     PAGE_SIZE = 'pageSize'
@@ -46,7 +49,10 @@ multiArchiveMetadata = archive.model('multiArchiveMetadata', {
 })
 
 
-@archive.route('/<string:id>')
+@archive.route('/<string:id>',
+               doc={
+                   "deprecated": True
+               })
 class getArchive(Resource):
 
     def get(self, id):

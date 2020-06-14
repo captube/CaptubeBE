@@ -4,11 +4,14 @@ import shutil
 import uuid
 from decimal import Decimal
 
+from deprecated import deprecated
+
 from business import session
 from core import capture
 from core import run
 
 
+@deprecated
 class Capture:
     RESULT_DIR = "results"
     S3_BUCKET = "captube.captures"

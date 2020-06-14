@@ -1,4 +1,5 @@
 from boto3.dynamodb.conditions import Attr
+from deprecated import deprecated
 
 from business import session
 
@@ -7,6 +8,7 @@ archiveTable = dynamodb.Table('archive')
 captureItemTable = dynamodb.Table('captureItem')
 
 
+@deprecated
 class Archive:
     _DEFAULT_PAGE_SIZE = 25
 

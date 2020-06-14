@@ -4,6 +4,7 @@ boto3==1.12.11
 botocore==1.15.11
 chardet==3.0.4
 Click==7.0
+Deprecated==1.2.10
 docutils==0.15.2
 Flask==1.1.1
 flask-restplus==0.13.0
@@ -34,4 +35,5 @@ srt==3.0.0
 typing-extensions==3.7.4.1
 urllib3==1.25.8
 Werkzeug==0.16.0
+wrapt==1.12.1
 zipp==0.6.0
