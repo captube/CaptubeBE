@@ -25,5 +25,5 @@
 /venv/
 *.pyc
 
-test/business/*/*.log
+*.log
 results/
