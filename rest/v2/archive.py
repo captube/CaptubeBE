@@ -2,18 +2,11 @@ from flask_restplus import Namespace, Resource, fields, marshal
 
 archive = Namespace('archive', description='archive api set')
 
-captureItem = archive.model('captureItem', {
-    'id': fields.String,
-    'url': fields.String,
-    'startTime': fields.Integer,
-    'endTime': fields.Integer,
-    'subtitle': fields.String
-})
-
 archiveItem = archive.model('archive', {
+    'id': fields.String,
     'title': fields.String,
     'thumbnailUrl': fields.String,
-    'items': fields.Nested(captureItem)
+    'items': fields.String
 })
 
 
@@ -32,26 +25,12 @@ class getArchive(Resource):
         return marshal(result, archiveItem), 200
 
 
-captureItem = archive.model('captureItem', {
-    'id': fields.String,
-    'url': fields.String,
-    'startTime': fields.Integer,
-    'endTime': fields.Integer,
-    'subtitle': fields.String
-})
-
-archiveItem = archive.model('archive', {
-    'id': fields.String,
-    'title': fields.String,
-    'thumbnailUrl': fields.String,
-    'items': fields.Nested(captureItem)
-})
-
-
 @archive.route('')
 class createArchive(Resource):
     parser = archive.parser()
 
+    parser.add_argument('title', required=False, help="Archive title can be null", type=str)
+    parser.add_argument('thumbnailUrl', required=False, help="Archive thumbnailUrl can be null", type=str)
     parser.add_argument('archiveItems', required=True, help='captureItems cannot be null or empty', type=str,
                         action='append')
 
@@ -60,10 +39,14 @@ class createArchive(Resource):
         args = self.parser.parse_args()
         print(f'archive - incoming args {args}')
 
+        title = args['title']
+        thumbnailUrl = args['thumbnailUrl']
+        items = args['archiveItems']
+
         try:
             # TODO Call v2 business logic to create archive
             result = {}
         except Exception as e:
             print(f'Exception occured during getArchive {e}')
             return 'Internal Server Error', 500
-        return marshal(result, archiveItem), 200
+        return 200
