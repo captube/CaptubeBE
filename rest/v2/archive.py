@@ -1,4 +1,8 @@
+import uuid
+
 from flask_restplus import Namespace, Resource, fields, marshal
+
+from business.v2.archive import Archive
 
 archive = Namespace('archive', description='archive api set')
 
@@ -17,13 +21,16 @@ class getArchive(Resource):
         print(f'archive item - id {id}')
 
         try:
-            # TODO Call v2 business logic to get archive
-            result = {}
+            # TODO Archive need to be DI not Object creation
+            result = Archive().getArchive(id)
         except Exception as e:
             print(f'Exception occured during getArchive {e}')
             return 'Internal Server Error', 500
         return marshal(result, archiveItem), 200
 
+archiveResult = archive.model('archiveResult', {
+    'id': fields.String
+})
 
 @archive.route('')
 class createArchive(Resource):
@@ -44,9 +51,9 @@ class createArchive(Resource):
         items = args['archiveItems']
 
         try:
-            # TODO Call v2 business logic to create archive
-            result = {}
+            # TODO Archive need to be DI not Object creation
+            result = Archive().setArchive(str(uuid.uuid4()), title, thumbnailUrl, items)
         except Exception as e:
-            print(f'Exception occured during getArchive {e}')
+            print(f'Exception occured during setArchive {e}')
             return 'Internal Server Error', 500
-        return 200
+        return marshal(result, archiveResult), 200

@@ -51,8 +51,8 @@ class GetImages(Resource):
             numberToCapture = args['numberToCapture']
             startTimeStamp = args['startTimeStamp']
             endTimeStamp = args['endTimeStamp']
-            # TODO Call v2 business logic for capture
-            result = {}
+            # TODO Capture need to be DI not Object creation
+            result = Capture().capture(url, language, numberToCapture, startTimeStamp, endTimeStamp)
         except Exception as e:
             print(f'Exception occured during capture {e}')
             traceback.print_exc(file=sys.stdout)
