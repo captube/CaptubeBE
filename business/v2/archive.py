@@ -25,3 +25,5 @@ class Archive:
                 'thumbnailUrl': thumbnailUrl,
                 'items': items
             })
+
+        return {'id': id}
