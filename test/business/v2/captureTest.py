@@ -76,3 +76,91 @@ class TestCapture(unittest.TestCase):
         capture._asCaptureInformation.assert_called_with(videoInformation, f'{videoId}_{language}')
         capture.captureSaver.save.assert_called_with(captureInformation)
         capture._clearLocalTemporary.assert_called()
+
+    def test__convertAsS3Url(self):
+        fileName = "MieyJ34_01.png"
+        capture = Capture()
+
+        convertedPath = capture._convertAsS3Url(fileName)
+
+        self.assertEqual(f'{capture.S3_PREFIX}{fileName}', convertedPath)
+
+    def test__asCaptureInformation(self):
+        title = "title"
+        thumbnailUrl = "thumbnailUrl"
+        id = "id"
+        frameInformation = [{
+            "frame_num": 0,
+            "img_path": "/home/captube/result/0.jpg",
+            "script": "script0"
+        }, {
+            "frame_num": 1,
+            "img_path": "/home/captube/result/1.jpg",
+            "script": "script1"
+        }, {
+            "frame_num": 2,
+            "img_path": "/home/captube/result/2.jpg",
+            "script": "script2"
+        }, {
+            "frame_num": 3,
+            "img_path": "/home/captube/result/3.jpg",
+            "script": "script3"
+        }, {
+            "frame_num": 4,
+            "img_path": "/home/captube/result/4.jpg",
+            "script": "script4"
+        }]
+
+        captureResultByScript = {
+            "title": title,
+            "thumbnail": thumbnailUrl,
+            "frame_infos": frameInformation
+        }
+
+        capture = Capture()
+        result = capture._asCaptureInformation(captureResultByScript, id)
+
+        expected = {
+            "title": title,
+            "thumbnailUrl": thumbnailUrl,
+            "id": id,
+            "captureItems":[
+                {"id": "id_0",
+                 "url": capture._convertAsS3Url("id_0.jpg"),
+                 "localFilePath": frameInformation[0]["img_path"],
+                 "saveFileName": "id_0.jpg",
+                 "timeStamp": 0,
+                 "subtitle": frameInformation[0]["script"]
+                 },
+                {"id": "id_1",
+                 "url": capture._convertAsS3Url("id_1.jpg"),
+                 "localFilePath": frameInformation[1]["img_path"],
+                 "saveFileName": "id_1.jpg",
+                 "timeStamp": 0,
+                 "subtitle": frameInformation[1]["script"]
+                 },
+                {"id": "id_2",
+                 "url": capture._convertAsS3Url("id_2.jpg"),
+                 "localFilePath": frameInformation[2]["img_path"],
+                 "saveFileName": "id_2.jpg",
+                 "timeStamp": 0,
+                 "subtitle": frameInformation[2]["script"]
+                 },
+                {"id": "id_3",
+                 "url": capture._convertAsS3Url("id_3.jpg"),
+                 "localFilePath": frameInformation[3]["img_path"],
+                 "saveFileName": "id_3.jpg",
+                 "timeStamp": 0,
+                 "subtitle": frameInformation[3]["script"]
+                 },
+                {"id": "id_4",
+                 "url": capture._convertAsS3Url("id_4.jpg"),
+                 "localFilePath": frameInformation[4]["img_path"],
+                 "saveFileName": "id_4.jpg",
+                 "timeStamp": 0,
+                 "subtitle": frameInformation[4]["script"]
+                 }
+            ]
+        }
+
+        self.assertEqual(expected, result)

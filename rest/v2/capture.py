@@ -18,8 +18,7 @@ captureParams = capture.model('CaptureParams', {
 captureItem = capture.model('captureItems', {
     'id': fields.String,
     'url': fields.String,
-    'startTime': fields.Integer,
-    'endTime': fields.Integer,
+    'timeStamp': fields.Integer,
     'subtitle': fields.String
 })
 

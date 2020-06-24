@@ -1,5 +1,4 @@
 import json
-import os
 from decimal import Decimal
 
 from boto3.dynamodb.conditions import Attr
@@ -27,11 +26,7 @@ class CaptureSaver:
             toSaveCaptures = self._getToSaveCaptures(captureInformation)
 
             for captureItem in toSaveCaptures:
-                captureFilePath = captureItem["path"]
-                captureFileName = f'{captureInformation["id"]}_{os.path.basename(captureItem["path"])}'
-                captureItem["url"] = self._convertAsS3Url(captureFileName)
-                del captureItem["path"]
-                self.s3_client.upload_file(captureFilePath, self.S3_BUCKET, captureFileName, ExtraArgs={
+                self.s3_client.upload_file(captureItem['localFilePath'], self.S3_BUCKET, captureItem['saveFileName'], ExtraArgs={
                     'ContentType': 'image/jpeg'
                 })
 
@@ -60,7 +55,7 @@ class CaptureSaver:
         if startTime > endTime:
             return result
 
-        storedCaptions = self._getCaptions(videoId, capturedItems, startTime, endTime)
+        storedCaptions = self._getCaptions(videoId, startTime, endTime)
 
         for captureItem in capturedItems:
             exist = False
@@ -76,18 +71,15 @@ class CaptureSaver:
 
     def _getCaptions(self, videoId, startTime, endTime):
         captions = self.captionTable.scan(
-            FilterExpression=Attr('videoId').eq(videoId) & Attr('timeStamp').gte(startTime) & Attr('timeStamp').lte(
-                endTime))['Items']
+            FilterExpression=Attr('videoId').eq(videoId) & Attr('timeStamp').gte(Decimal(startTime)) & Attr('timeStamp').lte(
+                Decimal(endTime)))['Items']
         print(f'captions from dynamo : {len(captions)} for {videoId} between {startTime} and {endTime}')
 
         return captions
 
-    def _convertAsS3Url(self, fileName):
-        return f'{self.S3_PREFIX}{fileName}'
-
     def _storeVideoMetadata(self, captureInformation):
         try:
-            if self._needSaveMetadata(id):
+            if self._needSaveVideoMetadata(captureInformation['id']):
                 response = self.videoTable.put_item(
                     Item={
                         'id': captureInformation['id'],
@@ -105,8 +97,11 @@ class CaptureSaver:
         return self._getVideo(id) == None
 
     def _getVideo(self, id):
-        video = self.videoTable.scan(
-            FilterExpression=Attr('id').eq(id))['Item']
+        response = self.videoTable.get_item(Key={'id': id})
+        video = None
+        if 'Item' in response:
+            video = response['Item']
+
         print(f'video from dynamo : {video} for {id}')
 
         return video
