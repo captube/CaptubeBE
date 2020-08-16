@@ -7,12 +7,30 @@ from business.v2.archive import Archive
 class archiveTest(unittest.TestCase):
     def test_getArchive(self):
         archive = Archive()
-        archiveItem = {}
+        archiveItem = {
+            'id': 'id',
+            'title': 'title',
+            'thumbnailUrl': 'thumbnailUrl',
+            'items': ['caption1', 'caption2', 'caption3']
+        }
+        captionItem = {
+            'id': 'id',
+            'url': 'url',
+            'timestamp': 'timestamp',
+            'subtitle': 'subtitle',
+            'videoId': 'videoId'
+        }
         archive.editableArchiveTable.get_item = MagicMock(return_value={'Item': archiveItem})
+        archive.captionTable.get_item = MagicMock(return_value={'Item': captionItem})
 
         result = archive.getArchive('arhiveId')
 
-        self.assertEqual(archiveItem, result)
+        self.assertEqual({
+            'id': 'id',
+            'title': 'title',
+            'thumbnailUrl': 'thumbnailUrl',
+            'items': [captionItem, captionItem, captionItem]
+        }, result)
 
     def test_setArchive(self):
         id = "archiveId"

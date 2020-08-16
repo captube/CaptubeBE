@@ -6,11 +6,19 @@ from business.v2.archive import Archive
 
 archive = Namespace('archive', description='archive api set')
 
+captureItem = archive.model('captureItem', {
+    'id': fields.String,
+    'url': fields.String,
+    'timestamp': fields.Integer,
+    'subtitle': fields.String,
+    'videoId': fields.String
+})
+
 archiveItem = archive.model('archive', {
     'id': fields.String,
     'title': fields.String,
     'thumbnailUrl': fields.String,
-    'items': fields.String
+    'items': fields.List(fields.Nested(captureItem))
 })
 
 
@@ -28,9 +36,11 @@ class getArchive(Resource):
             return 'Internal Server Error', 500
         return marshal(result, archiveItem), 200
 
+
 archiveResult = archive.model('archiveResult', {
     'id': fields.String
 })
+
 
 @archive.route('')
 class createArchive(Resource):
