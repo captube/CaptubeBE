@@ -25,6 +25,7 @@ captureItem = capture.model('captureItems', {
 captureResult = capture.model('CaptureResult', {
     'id': fields.String,
     'title': fields.String,
+    'thumbnailUrl': fields.String,
     'captureItems': fields.List(fields.Nested(captureItem))
 })
 
