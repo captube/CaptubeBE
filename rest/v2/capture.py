@@ -17,6 +17,7 @@ captureParams = capture.model('CaptureParams', {
 
 captureItem = capture.model('captureItems', {
     'id': fields.String,
+    "frameNumber": fields.Integer,
     'url': fields.String,
     'timeStamp': fields.Integer,
     'subtitle': fields.String
@@ -25,6 +26,7 @@ captureItem = capture.model('captureItems', {
 captureResult = capture.model('CaptureResult', {
     'id': fields.String,
     'title': fields.String,
+    'thumbnailUrl': fields.String,
     'captureItems': fields.List(fields.Nested(captureItem))
 })
 

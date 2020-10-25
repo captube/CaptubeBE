@@ -63,12 +63,14 @@ class Capture:
         for frame_info in frame_infos:
 
             id = f'{result["id"]}_{frame_info["frame_num"]}'
+            frameNumber = frame_info["frame_num"]
             path = frame_info["img_path"]
             fileName = f'{result["id"]}_{os.path.basename(path)}'
             url = self._convertAsS3Url(fileName)
 
             result["captureItems"].append({
                 "id": id,
+                "frameNumber": frameNumber,
                 "url": url,
                 "localFilePath": path,
                 "saveFileName": fileName,
