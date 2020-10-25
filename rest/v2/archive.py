@@ -41,6 +41,11 @@ archiveResult = archive.model('archiveResult', {
     'id': fields.String
 })
 
+requestCreateArchive = archive.model('RequestCreateArchive', {
+    'title': fields.String(required=False),
+    'thumbnailUrl': fields.String(required=False),
+    'archiveItems': fields.List(fields.String, required=True)
+})
 
 @archive.route('')
 class createArchive(Resource):
@@ -48,10 +53,9 @@ class createArchive(Resource):
 
     parser.add_argument('title', required=False, help="Archive title can be null", type=str)
     parser.add_argument('thumbnailUrl', required=False, help="Archive thumbnailUrl can be null", type=str)
-    parser.add_argument('archiveItems', required=True, help='captureItems cannot be null or empty', type=str,
-                        action='append')
+    parser.add_argument('archiveItems', required=True, help='ArchiveItems cannot be null or empty', action='append')
 
-    @archive.expect(parser)
+    @archive.expect(requestCreateArchive)
     def post(self):
         args = self.parser.parse_args()
         print(f'archive - incoming args {args}')
