@@ -17,6 +17,7 @@ captureParams = capture.model('CaptureParams', {
 
 captureItem = capture.model('captureItems', {
     'id': fields.String,
+    "frameNumber": fields.Integer,
     'url': fields.String,
     'timeStamp': fields.Integer,
     'subtitle': fields.String

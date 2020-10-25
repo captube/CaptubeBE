@@ -124,8 +124,9 @@ class TestCapture(unittest.TestCase):
             "title": title,
             "thumbnailUrl": thumbnailUrl,
             "id": id,
-            "captureItems":[
+            "captureItems": [
                 {"id": "id_0",
+                 "frameNumber": 0,
                  "url": capture._convertAsS3Url("id_0.jpg"),
                  "localFilePath": frameInformation[0]["img_path"],
                  "saveFileName": "id_0.jpg",
@@ -133,6 +134,7 @@ class TestCapture(unittest.TestCase):
                  "subtitle": frameInformation[0]["script"]
                  },
                 {"id": "id_1",
+                 "frameNumber": 1,
                  "url": capture._convertAsS3Url("id_1.jpg"),
                  "localFilePath": frameInformation[1]["img_path"],
                  "saveFileName": "id_1.jpg",
@@ -140,6 +142,7 @@ class TestCapture(unittest.TestCase):
                  "subtitle": frameInformation[1]["script"]
                  },
                 {"id": "id_2",
+                 "frameNumber": 2,
                  "url": capture._convertAsS3Url("id_2.jpg"),
                  "localFilePath": frameInformation[2]["img_path"],
                  "saveFileName": "id_2.jpg",
@@ -147,6 +150,7 @@ class TestCapture(unittest.TestCase):
                  "subtitle": frameInformation[2]["script"]
                  },
                 {"id": "id_3",
+                 "frameNumber": 3,
                  "url": capture._convertAsS3Url("id_3.jpg"),
                  "localFilePath": frameInformation[3]["img_path"],
                  "saveFileName": "id_3.jpg",
@@ -154,6 +158,7 @@ class TestCapture(unittest.TestCase):
                  "subtitle": frameInformation[3]["script"]
                  },
                 {"id": "id_4",
+                 "frameNumber": 4,
                  "url": capture._convertAsS3Url("id_4.jpg"),
                  "localFilePath": frameInformation[4]["img_path"],
                  "saveFileName": "id_4.jpg",
