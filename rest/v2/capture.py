@@ -56,7 +56,6 @@ class GetImages(Resource):
             # TODO Capture need to be DI not Object creation
             result = Capture().capture(url, language, numberToCapture, startTimeStamp, endTimeStamp)
         except Exception as e:
-            print(f'Exception occured during capture {e}')
             traceback.print_exc(file=sys.stdout)
             return 'Internal Server Error', 500
         return marshal(result, captureResult), 200
@@ -84,7 +83,6 @@ class GetAvailableLanguage(Resource):
             # TODO Capture need to be DI not Object creation
             result = Capture().getAvailableLanguage(url)
         except Exception as e:
-            print(f'Exception occured during capture {e}')
             traceback.print_exc(file=sys.stdout)
             return 'Internal Server Error', 500
         return marshal(result, languageResult), 200

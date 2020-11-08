@@ -28,9 +28,14 @@ class Capture:
     _youtube = None
 
     def getAvailableLanguage(self, url):
-        self._youtube = youtube(url)
-        # FIXME: pytube.exceptions.VideoUnavailable: fTTGALaRZoc is unavailable
-        caption = self._youtube.get_captions()
+        try:
+            self._youtube = youtube(url)
+            # FIXME: pytube.exceptions.VideoUnavailable: fTTGALaRZoc is unavailable
+            caption = self._youtube.get_captions()
+        except Exception as e:
+            print(f'Exception occurred during get languages {e}')
+            raise e
+
         return {
             "languages": self._youtube.get_available_langs(caption)
         }
@@ -45,6 +50,9 @@ class Capture:
                                                           workingPath)
             captureInformation = self._asCaptureInformation(videoInformation, id)
             self.captureSaver.save(captureInformation)
+        except Exception as e:
+            print(f'Exception occurred during capture {e}')
+            raise e
         finally:
             self._clearLocalTemporary(workingPath)
 
@@ -61,7 +69,6 @@ class Capture:
         frame_infos = captureResultByScript["frame_infos"]
 
         for frame_info in frame_infos:
-
             id = f'{result["id"]}_{frame_info["frame_num"]}'
             frameNumber = frame_info["frame_num"]
             path = frame_info["img_path"]
@@ -75,7 +82,7 @@ class Capture:
                 "localFilePath": path,
                 "saveFileName": fileName,
                 # TODO : video information should provide time stamp
-                #"timeStamp": frame_info["time_info"],
+                # "timeStamp": frame_info["time_info"],
                 "timeStamp": 0,
                 "subtitle": frame_info["script"]
             })
