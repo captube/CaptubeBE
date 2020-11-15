@@ -57,7 +57,7 @@ class GetImages(Resource):
             result = Capture().capture(url, language, numberToCapture, startTimeStamp, endTimeStamp)
         except Exception as e:
             traceback.print_exc(file=sys.stdout)
-            return 'Internal Server Error', 500
+            return f'{traceback.format_exc()}', 500
         return marshal(result, captureResult), 200
 
 

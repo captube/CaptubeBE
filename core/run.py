@@ -3,12 +3,13 @@ import os
 import sys
 import argparse
 import shutil
+import pprint
 import json
 from .logger import *
 from .youtube import youtube
 from .subtitle import srt_to_list
 from .make_cap_data import cap_data
-from .capture import capture_by_subs
+from .capture import capture_by_subs, download_thumbnail
 
 DEF_L_CODE = 'ko'
 DEF_VID_NAME = 'dl_video'
@@ -69,7 +70,7 @@ class make_youtube_info(dict):
         self['thumbnail'] = 'https://img.youtube.com/vi/%s/maxresdefault.jpg' %self.yt.info.video_id
 
     def save_json(self):
-        with open(self.json_path, 'w', encoding='utf-8') as fp:
+        with open(self.json_path, 'w', encoding='utf8') as fp:
             v_infos_json = json.dumps(self, ensure_ascii=False, indent="\t")
             fp.write(v_infos_json)
 
@@ -106,6 +107,7 @@ def main():
     video_info = make_youtube_info(args.url, args.name, args.lang, args.retry, args.fontsize)
     video_info.save_json()
     capture_by_subs(video_info)
+    download_thumbnail(video_info, bake_title=True)
 
 if __name__ == "__main__":
     main()
