@@ -16,7 +16,8 @@ class CaptureRunner:
     def _executeCaptureScript(self, url, language, numberToCapture, startTimeStamp, endTimeStamp, name):
         print(f'execute capture script, {url}, {language}, {numberToCapture}, {startTimeStamp}, {endTimeStamp}, {name}')
         videoInformation = run.make_youtube_info(url, name, language)
-        videoInformation.save_json()
         capture.capture_by_subs(videoInformation)
+        run.download_thumbnail(videoInformation, bake_title=True)
+        videoInformation.save_json()
         print(f'video_info : {videoInformation}')
         return videoInformation
