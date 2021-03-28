@@ -19,8 +19,9 @@ class download_thumbnail():
         self.__bg_opacity = v_info['bg_opacity']
         self.__imgpath = os.path.join(v_info['file_path'], 'imgs', 'frame_0' + IMG_FORMAT)
 
-        self.__download_thumbnail()
-        if bake_title:
+        succeed = self.__download_thumbnail()
+        if succeed and bake_title:
+            self.__imgsize = self.__get_img_size(self.__imgpath)
             self.__bake_title()
 
     def __download_thumbnail(self):
@@ -30,13 +31,24 @@ class download_thumbnail():
         if r.status_code == 200:
             with open(self.__imgpath, 'wb') as f:
                 f.write(r.content)
+            return True
         else:
             logger.info('Error: fail to download thrumbnail img. (status code: %d, url: %s)' %(r.status_code, self.__thumbnail_url))
+            return False
+
+    def __get_img_size(self, fpath):
+        if not os.path.exists(fpath):
+            return None
+        im = cv2.imread(fpath)
+        height, width, _ = im.shape
+        return (height, width)
 
     def __bake_title(self):
+        if not self.__imgsize:
+            return
         path = self.__imgpath
         text = self.__title
-        font_size = int(self.__fontsize * 2)
+        font_size = int(self.__imgsize[1] / 25) # width / radio
         background_opacity = self.__bg_opacity
         bake_caption(path, text, FONT_FILE, font_size, background_opacity)
 
