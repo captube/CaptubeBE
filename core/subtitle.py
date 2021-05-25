@@ -19,21 +19,22 @@ class srt_to_list(list):
 
     def make_frame_list(self, subs):
         for idx, sub in enumerate(subs):
-            st_sec, end_sec = self.convert_to_sec(
-                    sub.start.hours, sub.start.minutes, sub.start.seconds,
-                    sub.end.hours, sub.end.minutes, sub.end.seconds)
+            st_sec, end_sec = self.convert_to_sec(sub.start.to_time(), sub.end.to_time())
             ts = self.calc_timestamp(st_sec, end_sec)
             script = sub.text
             frame = self.set_ts_dict(idx + 1, ts, script)
             self.append(frame)
 
-    def convert_to_sec(self, st_h, st_m, st_s, ed_h, ed_m, ed_s):
-        st = (st_h * 3600) + (st_m * 60) + st_s
-        ed = (ed_h * 3600) + (ed_m * 60) + ed_s
-        return st, ed
+    def convert_to_sec(self, st, end):
+        st_sec = int(datetime.timedelta(hours=st.hour, minutes=st.minute, seconds=st.second).total_seconds()) \
+                + st.microsecond*0.000001
+        end_sec = int(datetime.timedelta(hours=end.hour, minutes=end.minute, seconds=end.second).total_seconds()) \
+                + end.microsecond*0.000001
+        return st_sec, end_sec
 
     def calc_timestamp(self, st, ed):
-        return st + float((ed - st) / 2)
+        ret = st + float((ed - st) / 2)
+        return round(ret, 3)
 
     def set_ts_dict(self, idx, ts, script):
         ts_dict = dict()
@@ -199,13 +200,16 @@ def drawText(img, draw, msg, pos, font, size, bg_opacity):
 # FIXME: refactoring to class
 # This code is referenced from https://blog.lipsumarium.com/caption-memes-in-python/
 def bake_caption(img_file, msg, font_file, font_size, bg_opacity):
-	img = Image.open(img_file)
-	draw = ImageDraw.Draw(img, 'RGBA')
-	font = ImageFont.truetype(font_file, font_size)
-	drawText(img, draw, msg, "bottom", font, font_size, bg_opacity)
-	img.save(img_file)
-	print('.', end='', flush=True)
-	return
+    try:
+        img = Image.open(img_file)
+        draw = ImageDraw.Draw(img, 'RGBA')
+        font = ImageFont.truetype(font_file, font_size)
+        drawText(img, draw, msg, "bottom", font, font_size, bg_opacity)
+        img.save(img_file)
+        print('.', end='', flush=True)
+    except(OSError) as e:
+        print(e)
+    return
 
 def main():
     a = srt_to_list('/Users/jihuun/project/youtube_capture/test_data/MMmOLN5zBLY/MMmOLN5zBLY.srt')
