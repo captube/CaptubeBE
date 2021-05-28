@@ -43,14 +43,28 @@ class test_make_cap_data(unittest.TestCase):
         self.assertEqual(40, get_fs2)
 
 class test_get_lang_list(unittest.TestCase):
-    def get_lang_list(self, url):
-        yt = youtube(url)
-        caption = yt.get_captions()
-        return yt.get_available_langs(caption)
+    def setUp(self):
+        url = 'https://youtu.be/T647CGsuOVU'
+        self.ytb = youtube(url)
+        self.caption = self.ytb.get_captions()
+
+    def get_lang_list(self):
+        return self.ytb.get_available_langs(self.caption)
+
+    def test_convert_lang_name_to_code(self):
+        self.assertEqual(self.ytb._youtube__convert_lang_name_to_code('en'), 'en')
+        self.assertEqual(self.ytb._youtube__convert_lang_name_to_code('English'), 'en')
+        self.assertEqual(self.ytb._youtube__convert_lang_name_to_code('English (auto-generated)'), 'a.en')
+
+    def test_is_lang_available(self):
+        self.assertTrue(self.ytb.is_lang_available('en'))
+        self.assertTrue(self.ytb.is_lang_available('a.en'))
+        self.assertFalse(self.ytb.is_lang_available('nnn'))
+        self.assertFalse(self.ytb.is_lang_available('English'))
 
     def test_is_list(self):
         url = 'https://youtu.be/QImCld9YubE'
-        self.assertEqual(type(self.get_lang_list(url)), type([]))
+        self.assertEqual(type(self.get_lang_list()), type([]))
     '''
     def test_get_multiple_list(self):
         url = 'https://youtu.be/QImCld9YubE'
