@@ -24,11 +24,9 @@ class test_pysrt(unittest.TestCase):
     def test_calc_min_to_sec(self):
         a = srt_to_list(SRT_FILE)
         subs = pysrt.open(SRT_FILE)
-        #st_sec, ed_sec = a.convert_to_sec(0,20,35,1,12,59)
-        sub = subs[116]
-        st_sec, ed_sec = a.convert_to_sec(sub.start.to_time(), sub.end.to_time())
-        self.assertEqual(st_sec, 344.015)
-        self.assertEqual(ed_sec, 346.588)
+        st_sec, ed_sec = a.convert_to_sec(0,20,35,1,12,59)
+        self.assertEqual(st_sec, 1235)
+        self.assertEqual(ed_sec, 4379)
 
 class test_make_cap_data(unittest.TestCase):
     def test_gen_structure(self):
@@ -61,11 +59,9 @@ class test_get_lang_list(unittest.TestCase):
         self.assertCountEqual(tobe, getcode_list)
     '''
 
-    '''
     def test_get_no_lang(self):
         url = 'https://youtu.be/1q3z-pyZd2E'
         self.assertEqual([], self.get_lang_list(url))
-    '''
 
 class test_download_youtube(unittest.TestCase):
     def test_instance(self):
