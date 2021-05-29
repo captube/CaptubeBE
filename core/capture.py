@@ -81,6 +81,7 @@ class capture_by_subs():
         cap_cnt = 1 # image number start with 1
 
         #for idx, f_dic in enumerate(self.frm_info):
+        #TODO: if no frame set last frame
         while(cap_cnt < f_total):
             ret, frame = cap.read()
             duration = float(f_cnt) / float(fps)
