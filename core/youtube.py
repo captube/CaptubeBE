@@ -12,6 +12,7 @@ class youtube():
         self.vinfo = cap_data()
         self.info = YouTube(url)
         self.save_video_info(self.vinfo, url)
+        self.cap = self.get_captions()
 
     def get_streams(self):
         if self.info:
@@ -44,18 +45,25 @@ class youtube():
     def __save_caption_code(self, code):
         self.vinfo['lang'] = code
 
-    def is_lang_available(self, cap, lang):
-        for l in cap.all():
-            lang_code = l.__dict__['code']
-            if lang_code == lang:
+    def is_lang_available(self, lang):
+        try:
+            if self.cap[lang].code == lang:
                 return True
-        return False
+            return False
+        except(KeyError):
+            return False
 
     def get_available_langs(self, cap):
         ret = []
-        for key, val in cap.lang_code_index.items():
-            ret.append(val.code) #NOTE: val.name show name of code
+        for key, val in self.cap.lang_code_index.items():
+            ret.append(val.name)
         return ret
+
+    def __convert_lang_name_to_code(self, langname):
+        for key, val in self.cap.lang_code_index.items():
+            if langname == val.name:
+                return val.code
+        return langname
 
     def __save_caption_file(self, cap, fpath, fname):
         if fname == None:
@@ -65,17 +73,17 @@ class youtube():
             fp.write(cap.generate_srt_captions())
         return tgt
 
-    def download_caption(self, fpath, fname=None, lang='en'):
-        captions = self.get_captions()
-        if not self.is_lang_available(captions, lang):
-            alternative_langs = self.get_available_langs(captions)
-            logger.critical('The caption language (%s) is not exist, try another lang in %s' %(lang, alternative_langs))
+    def download_caption(self, fpath, fname=None, lang='English'):
+        langcode=self.__convert_lang_name_to_code(lang)
+        if not self.is_lang_available(langcode):
+            alternative_langs = self.get_available_langs(self.cap)
+            logger.critical('The caption language "%s" is not exist, try to choose another language in: \n%s' %(langcode, alternative_langs))
             raise SystemExit
 
         # TODO here: get langcode from en to real code(en_GB or somethings)
 
-        self.__save_caption_code(lang)
-        caption = captions.get_by_language_code(lang)
+        self.__save_caption_code(langcode)
+        caption = self.cap[langcode]
         result = self.__save_caption_file(caption, fpath, fname)
         logger.info('The caption is downloaded in %s' %result)
         return result
