@@ -154,7 +154,10 @@ def drawText(img, draw, msg, pos, font, size, bg_opacity):
 		else:
 			#print("may not cut")
 			while msg[nextCut] != " ":
-				nextCut += 1
+				if nextCut < (len(msg) - 1):
+					nextCut += 1
+				else:
+					break
 			#print("new cut: {}".format(nextCut))
 
 		line = msg[cut:nextCut].strip()
@@ -165,7 +168,10 @@ def drawText(img, draw, msg, pos, font, size, bg_opacity):
 			#print("overshot")
 			nextCut -= 1
 			while msg[nextCut] != " ":
-				nextCut -= 1
+				if nextCut > 0:
+					nextCut -= 1
+				else:
+					break
 			#print("new cut: {}".format(nextCut))
 
 		lastCut = nextCut
