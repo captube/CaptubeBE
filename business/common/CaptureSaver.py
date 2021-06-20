@@ -26,9 +26,14 @@ class CaptureSaver:
             toSaveCaptures = self._getToSaveCaptures(captureInformation)
 
             for captureItem in toSaveCaptures:
-                self.s3_client.upload_file(captureItem['localFilePath'], self.S3_BUCKET, captureItem['saveFileName'], ExtraArgs={
-                    'ContentType': 'image/jpeg'
-                })
+                self.s3_client.upload_file(captureItem['localFilePath'], self.S3_BUCKET, captureItem['saveFileName'],
+                                           ExtraArgs={
+                                               'ContentType': 'image/jpeg'
+                                           })
+                self.s3_client.upload_file(captureItem['localNoSubtitleFilePath'], self.S3_BUCKET, captureItem['noSubtitleSaveFileName'],
+                                           ExtraArgs={
+                                               'ContentType': 'image/jpeg'
+                                           })
 
                 response = self.captionTable.put_item(
                     Item=json.loads(json.dumps({
@@ -36,7 +41,8 @@ class CaptureSaver:
                         "videoId": captureInformation["id"],
                         "timeStamp": captureItem["timeStamp"],
                         "subtitle": captureItem["subtitle"],
-                        "url": captureItem["url"]
+                        "url": captureItem["url"],
+                        "noSubtitleUrl": captureItem["noSubtitleUrl"]
                     }), parse_float=Decimal))
 
                 print(f'Succeed to store captureItem {captureItem["id"]}')
@@ -71,7 +77,8 @@ class CaptureSaver:
 
     def _getCaptions(self, videoId, startTime, endTime):
         captions = self.captionTable.scan(
-            FilterExpression=Attr('videoId').eq(videoId) & Attr('timeStamp').gte(Decimal(startTime)) & Attr('timeStamp').lte(
+            FilterExpression=Attr('videoId').eq(videoId) & Attr('timeStamp').gte(Decimal(startTime)) & Attr(
+                'timeStamp').lte(
                 Decimal(endTime)))['Items']
         print(f'captions from dynamo : {len(captions)} for {videoId} between {startTime} and {endTime}')
 
