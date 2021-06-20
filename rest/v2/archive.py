@@ -18,7 +18,8 @@ archiveItem = archive.model('archive', {
     'id': fields.String,
     'title': fields.String,
     'thumbnailUrl': fields.String,
-    'items': fields.List(fields.Nested(captureItem))
+    'items': fields.List(fields.Nested(captureItem)),
+    'noSubtitle': fields.Boolean
 })
 
 
@@ -44,8 +45,10 @@ archiveResult = archive.model('archiveResult', {
 requestCreateArchive = archive.model('RequestCreateArchive', {
     'title': fields.String(required=False),
     'thumbnailUrl': fields.String(required=False),
-    'archiveItems': fields.List(fields.String, required=True)
+    'archiveItems': fields.List(fields.String, required=True),
+    'noSubtitle': fields.Boolean(required=False, default=False)
 })
+
 
 @archive.route('')
 class createArchive(Resource):
@@ -54,6 +57,7 @@ class createArchive(Resource):
     parser.add_argument('title', required=False, help="Archive title can be null", type=str)
     parser.add_argument('thumbnailUrl', required=False, help="Archive thumbnailUrl can be null", type=str)
     parser.add_argument('archiveItems', required=True, help='ArchiveItems cannot be null or empty', action='append')
+    parser.add_argument('noSubtitle', required=False, default=False, help='Subtitle is included or not', type=bool)
 
     @archive.expect(requestCreateArchive)
     def post(self):
@@ -63,10 +67,11 @@ class createArchive(Resource):
         title = args['title']
         thumbnailUrl = args['thumbnailUrl']
         items = args['archiveItems']
+        noSubtitle = args['noSubtitle']
 
         try:
             # TODO Archive need to be DI not Object creation
-            result = Archive().setArchive(str(uuid.uuid4()), title, thumbnailUrl, items)
+            result = Archive().setArchive(str(uuid.uuid4()), title, thumbnailUrl, items, noSubtitle)
         except Exception as e:
             print(f'Exception occured during setArchive {e}')
             return 'Internal Server Error', 500
