@@ -7,12 +7,13 @@ import cv2			#pip3 install opencv-python
 from .subtitle import bake_caption
 import requests
 from .logger import *
+import shutil
 
 IMG_FORMAT = '.jpg'
 FONT_FILE = 'NanumGothic.ttf'
 
 class download_thumbnail():
-    def __init__(self, v_info, bake_title=False):
+    def __init__(self, v_info, arg_add_nosub=False, bake_title=False):
         self.__title = v_info['title']
         self.__thumbnail_url = v_info['thumbnail']
         self.__fontsize = v_info['font_size']
@@ -21,6 +22,9 @@ class download_thumbnail():
         v_info['frame_infos'][0]['img_path'] = self.__imgpath
 
         succeed = self.__download_thumbnail()
+        if succeed and arg_add_nosub:
+            self.__imgpath_nosub = os.path.join(v_info['file_path'], 'imgs', 'nosub', 'frame_0' + IMG_FORMAT)
+            shutil.copyfile(self.__imgpath, self.__imgpath_nosub)
         if succeed and bake_title:
             self.__imgsize = self.__get_img_size(self.__imgpath)
             self.__bake_title()
@@ -54,19 +58,25 @@ class download_thumbnail():
         bake_caption(path, text, FONT_FILE, font_size, background_opacity)
 
 class capture_by_subs():
-    def __init__(self, v_info):
-        self.__save_args(v_info)
+    def __init__(self, v_info, arg_add_nosub=False):
+        self.__save_args(v_info, arg_add_nosub)
         self.__mkdir_imgs()
         self.__capture_video()
 
-    def __save_args(self, dic):
+    def __save_args(self, dic, arg_add_nosub=False):
         self.img_path = os.path.join(dic['file_path'], 'imgs')
         self.vid_path = os.path.join(dic['file_path'], dic['file_name'] + '.mp4')
         self.vid_info = dic
         self.frm_info = dic['frame_infos']
+        self.add_nosub = False
+        if arg_add_nosub:
+            self.add_nosub = True
+            self.img_path_nosub = os.path.join(dic['file_path'], 'imgs', 'nosub')
 
     def __mkdir_imgs(self):
         os.makedirs(self.img_path)
+        if self.add_nosub:
+            os.makedirs(self.img_path_nosub)
 
     def __capture_video(self):
         cap = cv2.VideoCapture(self.vid_path)
@@ -94,13 +104,18 @@ class capture_by_subs():
             f_cnt += 1
 
     def __save_frame(self, frame, idx):
-        save_path = self.__make_frm_path(idx)
+        save_path, save_path_nosub = self.__make_frm_path(idx)
         self.frm_info[idx]['img_path'] = save_path
         self.__cv_save_image(frame, save_path)
+        if self.add_nosub:
+            self.__cv_save_image(frame, save_path_nosub)
 
     def __make_frm_path(self, idx):
-        ret = os.path.join(self.img_path, self.__numbering('frame', idx) + IMG_FORMAT)
-        return ret
+        sub = os.path.join(self.img_path, self.__numbering('frame', idx) + IMG_FORMAT)
+        nosub = None
+        if self.add_nosub:
+            nosub = os.path.join(self.img_path_nosub, self.__numbering('frame', idx) + IMG_FORMAT)
+        return sub, nosub
 
     def __numbering(self, name, num):
         return '%s_%s' %(name, num)
