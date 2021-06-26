@@ -19,6 +19,7 @@ captureItem = capture.model('captureItems', {
     'id': fields.String,
     "frameNumber": fields.Integer,
     'url': fields.String,
+    'noSubtitleUrl': fields.String,
     'timeStamp': fields.Integer,
     'subtitle': fields.String
 })
@@ -27,7 +28,7 @@ captureResult = capture.model('CaptureResult', {
     'id': fields.String,
     'title': fields.String,
     'thumbnailUrl': fields.String,
-    'captureItems': fields.List(fields.Nested(captureItem))
+    'captureItems': fields.List(fields.Nested(captureItem)),
 })
 
 

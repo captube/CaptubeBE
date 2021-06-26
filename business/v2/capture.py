@@ -14,8 +14,6 @@ class Capture:
     S3_BUCKET = "captube.captures"
     S3_PREFIX = "https://s3.ap-northeast-2.amazonaws.com/captube.captures/"
     dynamodb = session.resource('dynamodb', region_name='ap-northeast-2')
-    archiveTable = dynamodb.Table('archive')
-    captureItemTable = dynamodb.Table('captureItem')
     # TODO : Need DI
     youtubeIdParser = YoutubeIdParser()
     captureRunner = CaptureRunner()
@@ -72,15 +70,21 @@ class Capture:
             id = f'{result["id"]}_{frame_info["frame_num"]}'
             frameNumber = frame_info["frame_num"]
             path = frame_info["img_path"]
+            noSubtitlePath = self._getNoSubtitleImagePath(frame_info["img_path"])
             fileName = f'{result["id"]}_{os.path.basename(path)}'
+            noSubtitleFileName = f'noSub_{result["id"]}_{os.path.basename(noSubtitlePath)}'
             url = self._convertAsS3Url(fileName)
+            noSubtitleUrl = self._convertAsS3Url(noSubtitleFileName)
 
             result["captureItems"].append({
                 "id": id,
                 "frameNumber": frameNumber,
                 "url": url,
+                "noSubtitleUrl": noSubtitleUrl,
                 "localFilePath": path,
+                "localNoSubtitleFilePath": noSubtitlePath,
                 "saveFileName": fileName,
+                "noSubtitleSaveFileName": noSubtitleFileName,
                 # TODO : video information should provide time stamp
                 # "timeStamp": frame_info["time_info"],
                 "timeStamp": 0,
@@ -91,6 +95,9 @@ class Capture:
 
     def _convertAsS3Url(self, fileName):
         return f'{self.S3_PREFIX}{fileName}'
+
+    def _getNoSubtitleImagePath(self, imagePath):
+        return f'{os.path.dirname(imagePath)}/nosub/{os.path.basename(imagePath)}'
 
     def _clearLocalTemporary(self, id):
         shutil.rmtree(f'{self.RESULT_DIR}/{id}')

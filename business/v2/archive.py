@@ -28,7 +28,7 @@ class Archive:
 
         return archive
 
-    def setArchive(self, id, title, thumbnailUrl, items):
+    def setArchive(self, id, title, thumbnailUrl, items, noSubtitle):
         print(f'setArchive {id} {title} {thumbnailUrl} {items}')
 
         self.editableArchiveTable.put_item(
@@ -36,7 +36,8 @@ class Archive:
                 'id': id,
                 'title': title,
                 'thumbnailUrl': thumbnailUrl,
-                'items': items
+                'items': items,
+                'noSubtitle': noSubtitle
             })
 
         return {'id': id}
