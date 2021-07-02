@@ -18,9 +18,16 @@ class Archive:
 
         # TODO : Need to optimize by requesting with list
         for captionId in captionIds:
-            captions.append(self.captionTable.get_item(Key={
+            caption = self.captionTable.get_item(Key={
                 'id': captionId
-            })['Item'])
+            })['Item']
+
+            isNoSubtitle = archive['noSubtitle']
+
+            if isNoSubtitle:
+                caption['url'] = caption['noSubtitleUrl']
+
+            captions.append(caption)
 
         archive['items'] = captions
 
